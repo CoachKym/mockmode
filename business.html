@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Studies — Mock Mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0A1612;
+    --bg-card: #0F2820;
+    --bg-card-hi: #163C30;
+    --emerald: #10B981;
+    --emerald-soft: #34D399;
+    --emerald-glow: rgba(16, 185, 129, 0.28);
+    --gold: #FCD34D;
+    --gold-soft: #FDE68A;
+    --gold-rich: #D4AF37;
+    --gold-glow: rgba(252, 211, 77, 0.35);
+    --text: #E8F5F0;
+    --text-dim: #94B8AC;
+    --border: rgba(16, 185, 129, 0.22);
+    --border-gold: rgba(212, 175, 55, 0.35);
+    --correct: #10B981;
+    --wrong: #EF4444;
+    --wrong-glow: rgba(239, 68, 68, 0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 25% 15%, rgba(16, 185, 129, 0.08), transparent 55%),
+      radial-gradient(circle at 75% 85%, rgba(212, 175, 55, 0.06), transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 16px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--emerald-soft);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-btn:hover { background: var(--bg-card); border-color: var(--emerald); }
+
+  .subject-tag {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    font-size: 0.85rem;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ===== HOME ===== */
+  .home-hero {
+    text-align: center;
+    padding: 24px 8px 28px;
+  }
+
+  .home-hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.2rem, 7vw, 3rem);
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 24px var(--gold-glow), 0 0 4px rgba(255,255,255,0.4);
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .home-hero .tagline {
+    color: var(--text-dim);
+    font-size: 1rem;
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  .rounds-grid {
+    display: grid;
+    gap: 14px;
+    padding: 8px 0 32px;
+  }
+
+  .round-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .round-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--emerald);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+  }
+  .round-card.final {
+    border-color: var(--border-gold);
+    background: linear-gradient(135deg, #1A2A1F 0%, #2A2418 100%);
+  }
+  .round-card.final:hover {
+    border-color: var(--gold);
+    box-shadow: 0 8px 24px var(--gold-glow);
+  }
+
+  .round-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .round-icon { font-size: 1.6rem; }
+
+  .round-best {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .round-best.empty { color: var(--text-dim); opacity: 0.55; }
+
+  .round-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--emerald-soft);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .round-card.final h3 { color: var(--gold); }
+
+  .round-card .desc {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+  }
+
+  /* ===== QUIZ ===== */
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .quiz-round-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--emerald-soft);
+    letter-spacing: 0.06em;
+    font-size: 0.9rem;
+  }
+
+  .quiz-progress {
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg-card);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--emerald) 0%, var(--gold) 100%);
+    transition: width 0.4s;
+    box-shadow: 0 0 10px var(--emerald-glow);
+  }
+
+  .question-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 18px;
+    line-height: 1.45;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    background: var(--bg-deep);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.98rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--emerald);
+    background: var(--bg-card-hi);
+  }
+  .option:disabled { cursor: default; opacity: 0.85; }
+
+  .option-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: var(--bg-card-hi);
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+    font-size: 0.85rem;
+  }
+
+  .option.correct {
+    border-color: var(--correct);
+    background: rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 14px var(--emerald-glow);
+  }
+  .option.correct .option-letter { background: var(--correct); color: var(--bg-deep); }
+
+  .option.wrong {
+    border-color: var(--wrong);
+    background: rgba(239, 68, 68, 0.12);
+    box-shadow: 0 0 14px var(--wrong-glow);
+  }
+  .option.wrong .option-letter { background: var(--wrong); color: white; }
+
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border-left: 3px solid var(--emerald);
+    background: rgba(16, 185, 129, 0.08);
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.wrong { border-left-color: var(--wrong); background: rgba(239, 68, 68, 0.07); }
+
+  .feedback-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--emerald-soft);
+    letter-spacing: 0.05em;
+    font-size: 0.92rem;
+  }
+  .feedback.wrong .feedback-title { color: #FCA5A5; }
+
+  .feedback-text {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .next-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-soft) 100%);
+    color: var(--bg-deep);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px var(--emerald-glow);
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--emerald-glow); }
+
+  /* ===== RESULTS ===== */
+  .results-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 22px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .results-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  .results-round {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+  }
+
+  .score-circle {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 20px;
+    border: 3px solid var(--gold);
+    border-radius: 50%;
+    background: var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 32px var(--gold-glow), inset 0 0 22px rgba(252, 211, 77, 0.08);
+  }
+  .score-num {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    color: var(--gold-soft);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .score-total {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .new-best {
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 14px var(--gold-glow);
+  }
+
+  .score-message {
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--emerald-soft);
+  }
+  .score-sub {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    margin-bottom: 24px;
+  }
+
+  .results-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .btn {
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    letter-spacing: 0.05em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-soft) 100%);
+    color: var(--bg-deep);
+    box-shadow: 0 4px 14px var(--emerald-glow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold-soft);
+    border: 1.5px solid var(--border-gold);
+  }
+  .btn-secondary:hover { background: var(--bg-card-hi); border-color: var(--gold); }
+
+  @media (max-width: 480px) {
+    .home-hero h1 { font-size: 2rem; }
+    .question-card { padding: 18px; }
+    .question-text { font-size: 1rem; }
+    .option { font-size: 0.94rem; padding: 12px 14px; }
+    .score-circle { width: 110px; height: 110px; }
+    .score-num { font-size: 2.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <a href="index.html" class="back-btn">← Mock Mode</a>
+    <span class="subject-tag">BUSINESS</span>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen active" id="home-screen">
+    <div class="home-hero">
+      <h1>BUSINESS</h1>
+      <p class="tagline">The board is watching.</p>
+    </div>
+    <div class="rounds-grid" id="rounds-grid"></div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="quiz-screen">
+    <div class="quiz-header">
+      <span class="quiz-round-name" id="quiz-round-name"></span>
+      <span class="quiz-progress" id="quiz-progress"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div class="feedback-text" id="feedback-text"></div>
+      </div>
+    </div>
+    <button class="next-btn" id="next-btn">NEXT →</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="results-screen">
+    <div class="results-card">
+      <div class="results-title" id="results-title">ROUND COMPLETE</div>
+      <div class="results-round" id="results-round-name"></div>
+      <div class="score-circle">
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-total" id="score-total">/ 0</div>
+      </div>
+      <div class="new-best" id="new-best" style="display:none;">⚡ NEW BEST ⚡</div>
+      <div class="score-message" id="score-message"></div>
+      <div class="score-sub" id="score-sub"></div>
+      <div class="results-actions">
+        <button class="btn btn-primary" id="play-again-btn">PLAY AGAIN</button>
+        <button class="btn btn-secondary" id="back-home-btn">CHOOSE ANOTHER ROUND</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   BUSINESS STUDIES QUESTION BANK
+   Edexcel International GCSE — Year 10
+   5 themed rounds + Hostile Takeover (Final Boss)
+   ============================================================ */
+
+const QUESTION_BANK = {
+
+  /* =========================================================
+     ROUND 1: BUSINESS EMPIRES 🏛️
+     Ownership types & stakeholders
+     ========================================================= */
+  empires: [
+    { q: "A business is owned and run by ONE person, who keeps all the profits but has unlimited liability. What type of business is this?",
+      options: ["Partnership", "Sole trader", "Private limited company", "Public limited company"],
+      correct: 1,
+      explain: "Sole trader = solo founder. Keeps all profits, takes ALL the risk. Unlimited liability means if it goes bust, personal assets are on the line." },
+    { q: "What does 'unlimited liability' mean for a sole trader?",
+      options: ["They can take unlimited loans from the bank", "They are personally responsible for all business debts", "They can hire unlimited employees", "They never have to pay tax"],
+      correct: 1,
+      explain: "Unlimited liability = if the business owes money it can't pay, your personal stuff (house, car, savings) can be taken to cover it. Brutal but real." },
+    { q: "Which type of business is owned by 2-20 people who share profits and decisions?",
+      options: ["Sole trader", "Partnership", "Franchise", "Public limited company"],
+      correct: 1,
+      explain: "Partnership = 2 to 20 owners (called partners). Profit-sharing, decision-sharing, blame-sharing. Tag team energy." },
+    { q: "A LEGO franchisee pays the franchisor a fee. What does the franchisee get in return?",
+      options: ["Total control over their product range", "The right to use an established brand and business model", "100% of all profits with no fees", "Unlimited free stock"],
+      correct: 1,
+      explain: "Franchisees pay to use a proven brand + business model. Lower risk, instant recognition. Trade-off: less freedom to run things their way." },
+    { q: "Which is a DISADVANTAGE of being in a partnership?",
+      options: ["You always have to pay corporation tax", "Disagreements between partners can slow decisions", "Partners can't share the workload", "Profits must always be split equally"],
+      correct: 1,
+      explain: "Partners disagree. Always. Decisions get stuck. Plus profits split = less for each person. Classic group project energy on hard mode." },
+    { q: "What does 'Ltd' stand for in a company name?",
+      options: ["Listed", "Limited", "Long-term Trading Division", "Local Trade Department"],
+      correct: 1,
+      explain: "Ltd = Limited (private limited company). Owners have limited liability — personal assets are protected if the company collapses." },
+    { q: "What's the KEY difference between a Ltd and a PLC?",
+      options: ["A PLC pays no tax", "A PLC can sell shares to the public on the stock exchange", "A Ltd has unlimited liability", "A PLC must have only one owner"],
+      correct: 1,
+      explain: "PLC = Public Limited Company. Shares trade on the stock exchange — anyone can buy in. Ltd = private, shares only sold to invited people." },
+    { q: "What is a stakeholder?",
+      options: ["Someone who only owns shares in the business", "Anyone affected by or interested in the business", "Only the CEO and senior managers", "A government inspector"],
+      correct: 1,
+      explain: "Stakeholders = anyone with skin in the game. Owners, employees, customers, suppliers, government, local community. Shareholders are just ONE type." },
+    { q: "Which of these is an INTERNAL stakeholder of LEGO?",
+      options: ["Customers buying LEGO sets", "LEGO factory workers", "The Danish government", "Suppliers of plastic"],
+      correct: 1,
+      explain: "Internal = inside the business. Employees, owners, managers. External = outside (customers, suppliers, government, community)." },
+    { q: "LEGO's customers want LOW prices. LEGO's shareholders want HIGH profits. What is this an example of?",
+      options: ["Stakeholder cooperation", "Conflicting stakeholder interests", "Mass marketing", "Internal recruitment"],
+      correct: 1,
+      explain: "Different stakeholders, different goals. Customers vs shareholders is the classic clash. Lower prices = lower profits. Someone always loses." },
+    { q: "What is a business AIM?",
+      options: ["A specific, measurable target", "A long-term general goal of the business", "The price of a product", "A type of stakeholder"],
+      correct: 1,
+      explain: "Aim = the big-picture goal ('become the world's best toymaker'). Objective = the specific SMART target ('grow profit by 10% this year'). Aim = vibe. Objective = number." },
+    { q: "What does the 'M' in SMART objectives stand for?",
+      options: ["Marketing", "Measurable", "Motivated", "Maximised"],
+      correct: 1,
+      explain: "SMART = Specific, Measurable, Achievable, Realistic, Time-bound. Measurable means you can put a number on it. 'Increase sales' = bad. 'Increase sales by 15%' = SMART." },
+    { q: "The NHS is funded by the UK government. Which sector does it belong to?",
+      options: ["Private sector", "Public sector", "Tertiary sector", "Primary sector"],
+      correct: 1,
+      explain: "Public sector = owned/funded by government. NHS, BBC, state schools. Private sector = owned by individuals/shareholders. LEGO, NEXT, Apple." },
+    { q: "Why might a successful Ltd company decide to become a PLC?",
+      options: ["To pay less tax", "To raise huge capital by selling shares to the public", "To reduce the number of stakeholders", "To avoid having to publish accounts"],
+      correct: 1,
+      explain: "Going public = mass share sale = HUGE cash injection. Trade-off: less control (anyone can buy in, even a rival) and you must publish financials publicly." },
+    { q: "A sole trader's biggest risk is...",
+      options: ["Having to share profits", "Unlimited liability", "Government control", "Too many shareholders"],
+      correct: 1,
+      explain: "Solo = full risk. Business goes under, your personal assets get taken. Limited companies protect owners — sole traders don't have that shield." },
+    { q: "Two friends want to open a bakery together. They want to share startup costs and skills. What's the best business type?",
+      options: ["Sole trader", "Partnership", "PLC", "Public sector"],
+      correct: 1,
+      explain: "Two people sharing = partnership. Splits the workload, costs, risk. Just write a partnership agreement so you don't end up beefing over croissants later." },
+    { q: "What is 'limited liability'?",
+      options: ["Owners can only lose what they invested in the business", "The business has limited time to make profit", "Only a limited number of people can be employed", "The business can only sell limited products"],
+      correct: 0,
+      explain: "Limited liability = if the company collapses, owners lose ONLY their investment. Personal assets (house, car) are protected. Massive safety net vs sole traders." },
+    { q: "Which is most likely to be the MAIN aim of a brand-new business?",
+      options: ["Maximising shareholder dividends", "Survival", "Global expansion", "Hostile takeovers"],
+      correct: 1,
+      explain: "New businesses = vulnerable. First aim = stay alive. Profit, growth, world domination all come later. Can't dominate the world if you fold in month 3." }
+  ],
+
+  /* =========================================================
+     ROUND 2: MARKET DOMINATION 🎯
+     Marketing strategies, segmentation, mix
+     ========================================================= */
+  domination: [
+    { q: "Mass marketing means...",
+      options: ["Targeting a small specialised group", "Targeting a large broad audience with one product", "Selling only online", "Only advertising on TV"],
+      correct: 1,
+      explain: "Mass marketing = same product, huge audience. Coca-Cola, McDonald's, basic LEGO bricks. Wide net, one big strategy." },
+    { q: "Niche marketing means...",
+      options: ["Targeting everyone with the same product", "Targeting a small specialised segment of the market", "Only advertising in newspapers", "Selling at the lowest possible price"],
+      correct: 1,
+      explain: "Niche = small, specific group with specific needs. Vegan dog food, left-handed scissors, LEGO Architecture sets for adults. Smaller audience but they pay premium." },
+    { q: "Which of these is a BENEFIT of mass marketing?",
+      options: ["Lower production costs per unit due to economies of scale", "Charging premium prices to wealthy customers", "Avoiding competition", "Targeting one specific customer"],
+      correct: 0,
+      explain: "Mass production = make millions = each unit costs less. Economies of scale. That's why a Big Mac costs less than an artisan burger." },
+    { q: "Splitting a market into groups of customers with similar needs is called...",
+      options: ["Mass marketing", "Market segmentation", "Market research", "Market share"],
+      correct: 1,
+      explain: "Segmentation = chopping the market into groups (by age, income, location, lifestyle). LEGO Duplo = toddlers. LEGO Technic = teens/adults." },
+    { q: "LEGO Duplo (chunky bricks for toddlers) and LEGO Technic (complex sets for teens) are an example of segmenting the market by...",
+      options: ["Income", "Age", "Location", "Religion"],
+      correct: 1,
+      explain: "Same brand, different age groups, different products. Age segmentation in action. Smart move — captures customers from age 2 to 40+." },
+    { q: "What does USP stand for?",
+      options: ["Universal Selling Process", "Unique Selling Point", "Ultimate Sales Profit", "United Stakeholder Program"],
+      correct: 1,
+      explain: "Unique Selling Point — the thing that makes your product different. LEGO's USP? Bricks from 1958 still fit bricks made today. 65+ years of compatibility." },
+    { q: "The marketing mix is also known as the...",
+      options: ["3 Cs", "4 Ps", "5 Ss", "7 Es"],
+      correct: 1,
+      explain: "4 Ps = Product, Price, Place, Promotion. The four levers every marketer pulls. Get all four right and you've got a winning strategy." },
+    { q: "A business sets a HIGH price for a brand-new innovative product, then drops the price later. This pricing strategy is called...",
+      options: ["Penetration pricing", "Price skimming", "Competitive pricing", "Loss leader"],
+      correct: 1,
+      explain: "Skimming = high launch price, milk the early adopters, then drop. Apple does this with iPhones. Penetration = opposite — start LOW to grab market share fast." },
+    { q: "A new business sets very LOW prices to attract customers and steal market share. This is called...",
+      options: ["Price skimming", "Penetration pricing", "Premium pricing", "Cost-plus pricing"],
+      correct: 1,
+      explain: "Penetration pricing = low price to crash into the market and grab share. Once customers are loyal, raise prices. Streaming services love this trick." },
+    { q: "Which is a benefit of strong BRANDING?",
+      options: ["Customers can charge the business more money", "Customers recognise and trust the product, allowing premium pricing", "It eliminates the need for any marketing", "It guarantees zero competition"],
+      correct: 1,
+      explain: "Strong brand = trust = customers will pay more. LEGO bricks vs generic bricks: same plastic, way different price. The brand IS the value-add." },
+    { q: "Which type of promotion targets a specialised segment of the market?",
+      options: ["Mass marketing", "Niche marketing", "Market analysis", "Market share"],
+      correct: 1,
+      explain: "Niche = specialised segment. Targeted promo, smaller audience, way higher conversion rate because you're speaking directly to their needs." },
+    { q: "BOGOF (Buy One Get One Free) is an example of...",
+      options: ["Advertising", "Sales promotion", "Public relations", "Personal selling"],
+      correct: 1,
+      explain: "Sales promotion = short-term offers to boost sales. BOGOFs, discounts, coupons, free samples. Different from advertising (which builds awareness over time)." },
+    { q: "'Place' in the 4 Ps refers to...",
+      options: ["Where the business is headquartered", "How the product reaches the customer (distribution)", "The colour of the packaging", "The age of the customer"],
+      correct: 1,
+      explain: "Place = distribution. How does product get from factory to customer? Shops, online, vending machines, direct. Get this wrong and the best product flops." },
+    { q: "A business's market share is calculated as...",
+      options: ["Total profit ÷ total revenue × 100", "Business sales ÷ total market sales × 100", "Customers ÷ employees", "Revenue ÷ costs"],
+      correct: 1,
+      explain: "Market share = your slice of the total market pie, as a %. If toy market is worth £1bn and LEGO sells £200m, LEGO's market share is 20%." },
+    { q: "A risk of niche marketing is...",
+      options: ["Production costs are always too high", "If the niche disappears, the whole business collapses", "Customers always demand lower prices", "It's impossible to brand"],
+      correct: 1,
+      explain: "Niche = narrow audience. If trends shift or the niche dries up, you're cooked. Mass market spreads risk. Niche concentrates it. High reward, high risk." },
+    { q: "Why might LEGO benefit from MASS marketing?",
+      options: ["It limits sales to one country only", "It allows them to sell huge volumes globally and lower costs per unit", "It reduces the number of products they need to make", "It guarantees they have no competitors"],
+      correct: 1,
+      explain: "Mass market = global volume = mega revenue. LEGO sells in 130+ countries. That scale is only possible because the core product (bricks) appeals to everyone." },
+    { q: "A celebrity gets paid to wear a brand's clothing in public. This is an example of...",
+      options: ["Sponsorship / endorsement", "Penetration pricing", "Niche marketing", "Market segmentation"],
+      correct: 0,
+      explain: "Endorsement = paying influence to promote your brand. Massive in 2026 — TikTokers, YouTubers, athletes. Borrowed credibility = sales boost." },
+    { q: "Why is market segmentation useful for a business?",
+      options: ["It makes the business smaller", "It allows targeted products and marketing for each customer group", "It reduces competition automatically", "It eliminates the need for research"],
+      correct: 1,
+      explain: "Segmentation = aim sharper. Different message, product, price for each group. Way more effective than one bland message for everyone. Precision strikes vs spray and pray." }
+  ],
+
+  /* =========================================================
+     ROUND 3: INTEL OPS 🔍
+     Market research methods
+     ========================================================= */
+  intel: [
+    { q: "Primary market research is...",
+      options: ["Research collected by someone else for a different purpose", "Research collected first-hand by the business itself", "Research only done online", "Research about competitors only"],
+      correct: 1,
+      explain: "Primary = YOU collect it. Surveys, focus groups, interviews. Specific to your needs. Slow and expensive but gold-tier accurate." },
+    { q: "Secondary market research is...",
+      options: ["Research the business collects itself", "Research already collected by someone else (e.g. govt reports, news)", "Research that's less important", "Research done after the product launches"],
+      correct: 1,
+      explain: "Secondary = pre-existing data. Government stats, market reports, competitor websites. Cheap and fast but might not exactly fit your question." },
+    { q: "What is a focus group?",
+      options: ["A small group of customers asked questions in detail", "A group of senior managers", "A type of advertisement", "A government regulator"],
+      correct: 0,
+      explain: "Focus group = 6-10 people in a room, deep discussion about your product. Rich qualitative insight. Expensive but gives you the WHY behind the data." },
+    { q: "What is a questionnaire?",
+      options: ["A face-to-face interview", "A list of written questions sent to many people", "A type of secondary research", "A focus group with one person"],
+      correct: 1,
+      explain: "Questionnaire = standardised written questions, sent to many. Online forms, paper, in-store cards. Quantitative data fast. Less depth than focus groups." },
+    { q: "Quantitative data is...",
+      options: ["Numerical data (numbers, percentages, statistics)", "Opinions and feelings", "Always more reliable than qualitative", "Only collected through interviews"],
+      correct: 0,
+      explain: "Quantitative = quantities = numbers. '67% prefer red'. Easy to graph and compare. Qualitative = feelings/opinions. Both matter." },
+    { q: "Qualitative data is...",
+      options: ["Numerical statistics", "Opinions, feelings, and detailed descriptions", "Always cheaper to collect", "Only collected by government"],
+      correct: 1,
+      explain: "Qualitative = quality of experience = words, feelings, deep insight. Harder to measure but reveals motivations numbers can't show." },
+    { q: "Why is sample size important in research?",
+      options: ["Bigger samples are usually more accurate and representative", "Smaller samples are always better", "Sample size doesn't matter", "Samples should always be exactly 10 people"],
+      correct: 0,
+      explain: "Bigger sample = more representative = more reliable. Asking 10 people what they think isn't enough. Asking 1,000 starts to mean something." },
+    { q: "A leading question (e.g. 'Don't you agree LEGO is amazing?') causes...",
+      options: ["More accurate results", "Bias — pushing respondents toward a specific answer", "Faster surveys", "Cheaper research"],
+      correct: 1,
+      explain: "Leading questions = bias = useless data. The phrasing pushes the answer. Always ask neutrally. 'How would you rate LEGO?' >> 'Don't you love LEGO?'" },
+    { q: "A benefit of secondary research is...",
+      options: ["It's tailored exactly to your business needs", "It's usually cheaper and faster than primary research", "It's always 100% accurate", "It always involves new data"],
+      correct: 1,
+      explain: "Secondary = already exists = cheap, fast. Government data, market reports, even Google. Downside: not specific to your exact question." },
+    { q: "A drawback of secondary research is...",
+      options: ["It's always too expensive", "Data may be out of date or not specific to your needs", "It always takes years to collect", "It's illegal in most countries"],
+      correct: 1,
+      explain: "Secondary data = collected for someone else's purpose. Might be stale. Might not match what you actually need. Always check dates and source." },
+    { q: "An advantage of FOCUS GROUPS for LEGO researching new toys is...",
+      options: ["They give detailed feedback and emotional reactions you can't get from forms", "They are the cheapest research method", "They guarantee 100% honest answers", "They reach millions of people at once"],
+      correct: 0,
+      explain: "Focus groups = deep insight. You see kids' faces light up (or not). Tone of voice, body language, real reactions. Forms can't capture that energy." },
+    { q: "A disadvantage of QUESTIONNAIRES is...",
+      options: ["Response rates can be low and answers may lack depth", "They cost millions to send out", "They can only be used in one country", "They only work for adult products"],
+      correct: 0,
+      explain: "Most people ignore surveys. The ones who reply might rush through. You get data but not deep insight. Quick and cheap, but shallow." },
+    { q: "OBSERVATION as primary research means...",
+      options: ["Watching customer behaviour without asking questions", "Asking customers about their feelings", "Reading old reports", "Sending out questionnaires"],
+      correct: 0,
+      explain: "Observation = silent watching. How do shoppers move through a LEGO store? What do they pick up first? Behaviour > what people SAY they do." },
+    { q: "An online survey vs a paper survey usually has...",
+      options: ["Faster results and lower cost", "Slower results and higher cost", "More accurate results always", "Identical results"],
+      correct: 0,
+      explain: "Online = instant submission, auto-tallied, no print costs. Big efficiency jump. Downside: skews younger/tech-savvy. Older customers might be missed." },
+    { q: "Why would LEGO use BOTH primary and secondary research before launching a new toy?",
+      options: ["It's required by law", "Primary gives specific insight, secondary gives broader market context", "It doubles the cost for no benefit", "Only one of them is reliable"],
+      correct: 1,
+      explain: "Best of both worlds. Secondary = market context (toy industry size, trends). Primary = specific insight (do KIDS like THIS toy?). Solo, either is incomplete." },
+    { q: "When researching a new toy for FOUR-YEAR-OLDS, which is a problem with using questionnaires?",
+      options: ["Four-year-olds can't read or write well enough to fill them in", "Questionnaires are illegal for children", "Children always lie on surveys", "Questionnaires are too expensive"],
+      correct: 0,
+      explain: "Four-year-olds can't read paragraphs let alone fill in surveys. For young kids, observation + parent focus groups beats written research every time." },
+    { q: "Which of these is SECONDARY research?",
+      options: ["A LEGO survey of 500 parents", "A LEGO focus group with kids", "Reading a government report on UK toy spending", "Observing kids in a LEGO store"],
+      correct: 2,
+      explain: "Secondary = data collected by someone else. Government reports, news articles, competitor data, industry studies. The other three are all primary." },
+    { q: "A business spends £50,000 on primary research and gets the same insight a competitor got for £500 from secondary research. What does this show?",
+      options: ["Primary research is always better", "Secondary research can be more cost-effective when relevant data already exists", "Research never works", "Only big businesses should do research"],
+      correct: 1,
+      explain: "If the data already exists, why pay to recreate it? Smart researchers check secondary FIRST, then use primary to fill the gaps. Save the budget for what matters." }
+  ],
+
+  /* =========================================================
+     ROUND 4: HIRE & FIRE 💼
+     Recruitment, training, functional areas
+     ========================================================= */
+  hire: [
+    { q: "What is a JOB DESCRIPTION?",
+      options: ["A list of qualifications a candidate needs", "A document describing the duties and responsibilities of the role", "An interview question list", "A salary offer letter"],
+      correct: 1,
+      explain: "Job description = what the JOB involves. Duties, responsibilities, who you report to. About the ROLE, not the person." },
+    { q: "What is a PERSON SPECIFICATION?",
+      options: ["A description of the duties of the role", "A list of skills, qualifications, and qualities the candidate needs", "A job advert", "A pay slip"],
+      correct: 1,
+      explain: "Person spec = what the PERSON needs. Skills, qualifications, experience, personality. About the candidate, not the role. Pairs with job description." },
+    { q: "When applying for a job, a person fills in an...",
+      options: ["Application form", "Job description", "Person specification", "Shortlist"],
+      correct: 0,
+      explain: "Application form = standardised document candidates fill in. Lets the business compare apples to apples instead of a stack of weird CVs." },
+    { q: "SHORTLISTING means...",
+      options: ["Reducing many applicants to a smaller list of the best ones", "Writing a shorter job description", "Hiring everyone who applies", "Firing people quickly"],
+      correct: 0,
+      explain: "Shortlisting = filter time. 200 applicants becomes 8 best matches. Saves interview time. Brutal but necessary." },
+    { q: "INTERNAL recruitment means hiring from...",
+      options: ["A different country", "Inside the business (existing employees)", "Outside the business", "Recruitment agencies only"],
+      correct: 1,
+      explain: "Internal = promoting from within. Cheap, quick, motivating. Downside: no fresh ideas, and it leaves a gap in the original role." },
+    { q: "EXTERNAL recruitment means hiring from...",
+      options: ["Inside the business only", "Outside the business (the wider job market)", "Family of current employees only", "The board of directors"],
+      correct: 1,
+      explain: "External = bringing in new blood. Wider talent pool, fresh perspectives. Downside: more expensive, longer onboarding, riskier hire." },
+    { q: "A benefit of INTERNAL recruitment is...",
+      options: ["Usually cheaper — no advert costs, agency fees, or relocation", "Always brings new ideas from outside", "Guarantees the best candidate is hired", "Avoids the need for any training"],
+      correct: 0,
+      explain: "Internal = no advert costs, no agency fees, no relocation. Cheaper. Plus you already know the person — their reliability is a known quantity." },
+    { q: "A benefit of EXTERNAL recruitment is...",
+      options: ["It always costs less", "It brings fresh ideas and skills from outside the business", "Existing employees are guaranteed promotion", "It avoids the need for interviews"],
+      correct: 1,
+      explain: "External = new perspectives, new skills, no internal politics. Stuck in a rut? An outside hire can shake things up. Costs more, but can be transformative." },
+    { q: "INDUCTION training is...",
+      options: ["Training given to new employees when they first start", "Training only for managers", "Training that happens once a year", "Training that always happens off-site"],
+      correct: 0,
+      explain: "Induction = welcome week. Tour, introductions, policies, how things work here. First impressions matter. Bad induction = bad retention." },
+    { q: "ON-THE-JOB training means...",
+      options: ["Training while doing the actual job, often by a colleague", "Training at a university only", "Training that only happens once", "Training given before being hired"],
+      correct: 0,
+      explain: "On-the-job = learn by doing, usually shadowing a senior. Cheap, practical, immediate. Downside: only as good as the person teaching you." },
+    { q: "OFF-THE-JOB training is...",
+      options: ["Training that happens away from the workplace, e.g. at a college", "Training during weekends only", "Training given to ex-employees", "Training that requires no notes"],
+      correct: 0,
+      explain: "Off-the-job = leave the office, go learn (course, college, conference). More expensive but specialist skills get covered properly. No distractions from the day job." },
+    { q: "Which functional area is responsible for hiring and training employees?",
+      options: ["Marketing", "Finance", "Operations", "Human Resources (HR)"],
+      correct: 3,
+      explain: "HR = the people department. Recruitment, training, contracts, performance reviews, disciplinaries. The whole employee lifecycle is on them." },
+    { q: "Which functional area handles money, accounts, and budgets?",
+      options: ["Marketing", "Finance", "Operations", "HR"],
+      correct: 1,
+      explain: "Finance = the money department. Cashflow, profit/loss, tax, budgets, payroll. They tell every other department what they can and can't afford." },
+    { q: "Which functional area is responsible for actually MAKING the product?",
+      options: ["Marketing", "Finance", "Operations (Production)", "HR"],
+      correct: 2,
+      explain: "Operations / Production = the doers. Manufacturing, quality control, supply chain, getting product out the door. Without them, the company has nothing to sell." },
+    { q: "Which functional area researches customers and promotes products?",
+      options: ["Marketing", "Finance", "Operations", "HR"],
+      correct: 0,
+      explain: "Marketing = market research, branding, advertising, promotion. The customer-facing side of the business. Figures out what to sell and how to sell it." },
+    { q: "A company prefers INTERNAL recruitment for senior roles. The MAIN benefit is...",
+      options: ["It motivates existing staff who see a clear promotion path", "It's always faster than firing people", "It avoids training costs entirely", "It always doubles profits"],
+      correct: 0,
+      explain: "Internal promotion = staff see a future = motivation goes up. People work harder when they know hard work gets noticed. Plus = cheaper than external." },
+    { q: "A CV (curriculum vitae) typically includes...",
+      options: ["Salary expectations only", "Education, work history, and skills", "A photo only", "A list of friends"],
+      correct: 1,
+      explain: "CV = your professional story. Education, jobs, skills, achievements. Customised per application. Don't lie on it — interviewers WILL probe." },
+    { q: "Why might external recruitment be SLOWER than internal recruitment?",
+      options: ["Adverts, applications, shortlisting, multiple interviews, and references all take time", "It always involves international travel", "External hires need 5 years of training first", "It requires government approval"],
+      correct: 0,
+      explain: "External = full process. Advertise → applications → shortlist → interview → second interview → references → offer → notice period. Months. Internal = days/weeks." }
+  ],
+
+  /* =========================================================
+     ROUND 5: BOARDROOM POLITICS ⚔️
+     Motivation, organisational structure, communication
+     ========================================================= */
+  boardroom: [
+    { q: "Maslow's hierarchy of needs is shaped like a...",
+      options: ["Circle", "Pyramid", "Square", "Spiral"],
+      correct: 1,
+      explain: "Pyramid. Bottom = basic needs (food, shelter), top = self-actualisation. Can't motivate someone with 'meaningful work' if they can't pay rent. Lower needs first." },
+    { q: "What is the BOTTOM level of Maslow's hierarchy?",
+      options: ["Self-actualisation", "Esteem needs", "Safety needs", "Physiological (basic) needs"],
+      correct: 3,
+      explain: "Bottom = physiological. Food, water, shelter, sleep. The pay packet covers these. If wages are too low to live on, no other motivation works." },
+    { q: "What is the TOP level of Maslow's hierarchy?",
+      options: ["Physiological needs", "Self-actualisation (becoming your best self)", "Safety needs", "Social needs"],
+      correct: 1,
+      explain: "Top tier = self-actualisation. Doing meaningful, fulfilling work. Once basics are sorted, people chase purpose. That's why creative jobs hook some people for life." },
+    { q: "Herzberg's theory splits motivation into two factors. They are...",
+      options: ["Push and pull factors", "Hygiene factors and motivators", "Internal and external factors", "Primary and secondary factors"],
+      correct: 1,
+      explain: "Hygiene factors (pay, conditions, job security) prevent dissatisfaction but don't motivate. Motivators (achievement, recognition, growth) actually drive performance. Two different jobs." },
+    { q: "Which of these is a HYGIENE factor in Herzberg's theory?",
+      options: ["Recognition for good work", "Salary and working conditions", "Personal growth", "Achievement"],
+      correct: 1,
+      explain: "Hygiene = the basics that need to exist or people get cranky. Pay, working conditions, job security. Get them right and people are satisfied. Get them wrong = chaos." },
+    { q: "Which of these is a MOTIVATOR in Herzberg's theory?",
+      options: ["Working conditions", "Salary", "Recognition for achievement", "Job security"],
+      correct: 2,
+      explain: "Motivators = the stuff that actually drives people to perform. Recognition, achievement, responsibility, growth. Pay alone won't make someone love their job." },
+    { q: "Taylor's theory of motivation focuses on...",
+      options: ["Money as the main motivator", "Friendships at work", "Personal growth", "Job security only"],
+      correct: 0,
+      explain: "Taylor = OG scientific management guy. Believed pay = main motivator. 'Pay people per piece they produce, they'll work harder.' Worked in factories, less so in creative jobs." },
+    { q: "A BONUS is paid when...",
+      options: ["An employee starts a new job", "An employee or business hits a target", "Every Friday automatically", "An employee resigns"],
+      correct: 1,
+      explain: "Bonus = reward for hitting targets. Could be individual, team, or company-wide. Performance-linked = motivating. Guaranteed = it's just extra salary." },
+    { q: "COMMISSION is most commonly paid to...",
+      options: ["Sales staff (a % of what they sell)", "Cleaners", "Receptionists", "Trainees"],
+      correct: 0,
+      explain: "Commission = % of sales. Sell more, earn more. Massive motivator for sales roles. Estate agents, car salespeople, recruiters — all live on commission." },
+    { q: "Which of these is a NON-FINANCIAL form of motivation?",
+      options: ["Pay rise", "Bonus", "Recognition / employee of the month", "Commission"],
+      correct: 2,
+      explain: "Non-financial = no money changes hands. Recognition, awards, more responsibility, training opportunities, flexibility. Often more motivating than another £50." },
+    { q: "A FRINGE BENEFIT (or 'perk') is...",
+      options: ["A type of haircut", "An extra benefit on top of salary, e.g. company car or gym membership", "A type of bonus paid yearly", "A penalty for poor performance"],
+      correct: 1,
+      explain: "Fringe benefits = perks. Health insurance, gym, company phone, free lunch. Cheaper for the company than equivalent salary increases (tax reasons) and feels generous." },
+    { q: "A TALL organisational structure has...",
+      options: ["Few levels of hierarchy and wide spans of control", "Many levels of hierarchy and narrow spans of control", "No managers at all", "Only one employee"],
+      correct: 1,
+      explain: "Tall = many layers, narrow control spans. Lots of bosses, lots of promotion levels. Common in big firms (NEXT, banks, government). Slow decisions but clear structure." },
+    { q: "A FLAT organisational structure has...",
+      options: ["Many levels of hierarchy", "Few levels of hierarchy and wider spans of control", "Only the CEO and one other person", "More managers than workers"],
+      correct: 1,
+      explain: "Flat = few layers. Common in startups. Faster decisions, more autonomy, but managers stretched thin overseeing huge teams. No clear promotion ladder." },
+    { q: "The SPAN OF CONTROL refers to...",
+      options: ["The salary of a manager", "The number of employees a manager directly supervises", "The age of the manager", "The size of the company"],
+      correct: 1,
+      explain: "Span of control = how many people report directly to you. 5 = manageable. 25 = chaos. Wider spans in flat structures, narrower in tall ones." },
+    { q: "The CHAIN OF COMMAND refers to...",
+      options: ["The line of authority from top to bottom of the business", "The order food gets served at company lunches", "Who started the business first", "The supplier list"],
+      correct: 0,
+      explain: "Chain of command = who reports to who, top to bottom. CEO → directors → managers → team leads → workers. Clear chain = clear accountability." },
+    { q: "A barrier to communication in a large business could be...",
+      options: ["Too many layers of management slowing or distorting messages", "Having a clear org chart", "Using email", "Hiring more staff"],
+      correct: 0,
+      explain: "Layers = filters. Each layer can distort, delay, or drop info. CEO's message goes through 6 levels and arrives weirdly. Tall structures suffer from this most." },
+    { q: "Why might a business pay its employees ABOVE the minimum wage?",
+      options: ["It's a legal requirement", "To attract better candidates and motivate / retain staff", "To make the business less profitable on purpose", "To avoid having to do interviews"],
+      correct: 1,
+      explain: "Above min wage = better talent pool + lower turnover + more loyalty. Costs more upfront but saves on constant rehiring/retraining. Investment, not expense." },
+    { q: "A benefit of a TALL hierarchical structure for NEXT is...",
+      options: ["Decisions are made instantly with no managers", "Clear promotion paths motivate employees and clear lines of authority", "It costs nothing to run", "Customers don't notice the difference"],
+      correct: 1,
+      explain: "Tall structure = clear ladder. Workers see a path: assistant → supervisor → manager → senior manager. Motivating. Plus: clear authority, less confusion about who decides what." }
+  ]
+};
+
+/* ============================================================
+   ROUND CONFIG
+   ============================================================ */
+const ROUNDS = [
+  { key: 'empires',     title: 'BUSINESS EMPIRES',    icon: '🏛️', tagline: 'Ownership & stakeholders',         qCount: 10 },
+  { key: 'domination',  title: 'MARKET DOMINATION',   icon: '🎯', tagline: 'Marketing strategy',                qCount: 10 },
+  { key: 'intel',       title: 'INTEL OPS',           icon: '🔍', tagline: 'Market research',                   qCount: 10 },
+  { key: 'hire',        title: 'HIRE & FIRE',         icon: '💼', tagline: 'Recruitment & functional areas',    qCount: 10 },
+  { key: 'boardroom',   title: 'BOARDROOM POLITICS',  icon: '⚔️', tagline: 'Motivation, structure, comms',      qCount: 10 },
+  { key: 'finalboss',   title: 'HOSTILE TAKEOVER',    icon: '👑', tagline: '15 random — your final pitch',      qCount: 15, isFinal: true }
+];
+
+const STORAGE_KEY = 'business-mock-mode-v1';
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  questions: [],
+  qIndex: 0,
+  score: 0,
+  answered: false,
+  currentRound: null
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getBestScores() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function setBestScore(roundKey, score) {
+  const scores = getBestScores();
+  scores[roundKey] = score;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(scores)); } catch {}
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   HOME SCREEN
+   ============================================================ */
+function renderHome() {
+  const grid = document.getElementById('rounds-grid');
+  const bests = getBestScores();
+  grid.innerHTML = '';
+
+  ROUNDS.forEach(round => {
+    const best = bests[round.key];
+    const bestText = best !== undefined
+      ? `BEST ${best}/${round.qCount}`
+      : `${round.qCount} QUESTIONS`;
+    const bestClass = best !== undefined ? 'round-best' : 'round-best empty';
+
+    const card = document.createElement('div');
+    card.className = 'round-card' + (round.isFinal ? ' final' : '');
+    card.innerHTML = `
+      <div class="round-card-top">
+        <div class="round-icon">${round.icon}</div>
+        <div class="${bestClass}">${bestText}</div>
+      </div>
+      <h3>${round.title}</h3>
+      <div class="desc">${round.tagline}</div>
+    `;
+    card.addEventListener('click', () => startRound(round));
+    grid.appendChild(card);
+  });
+}
+
+/* ============================================================
+   START ROUND
+   ============================================================ */
+function startRound(round) {
+  state.currentRound = round;
+  state.qIndex = 0;
+  state.score = 0;
+  state.answered = false;
+
+  let pool;
+  if (round.isFinal) {
+    pool = Object.values(QUESTION_BANK).flat();
+  } else {
+    pool = QUESTION_BANK[round.key];
+  }
+
+  state.questions = shuffle(pool).slice(0, round.qCount);
+
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+/* ============================================================
+   RENDER QUESTION
+   ============================================================ */
+function renderQuestion() {
+  state.answered = false;
+
+  const q = state.questions[state.qIndex];
+  document.getElementById('quiz-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('quiz-progress').textContent = `${state.qIndex + 1} / ${state.questions.length}`;
+  document.getElementById('progress-fill').style.width = `${(state.qIndex / state.questions.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.q;
+
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, btn));
+    optionsEl.appendChild(btn);
+  });
+
+  const feedback = document.getElementById('feedback');
+  feedback.className = 'feedback';
+  feedback.classList.remove('show', 'wrong');
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.remove('show');
+}
+
+/* ============================================================
+   HANDLE ANSWER
+   ============================================================ */
+function handleAnswer(choice) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.questions[state.qIndex];
+  const correct = choice === q.correct;
+  const allButtons = document.querySelectorAll('.option');
+
+  allButtons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    else if (i === choice) b.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById('feedback');
+  const feedbackTitle = document.getElementById('feedback-title');
+  const feedbackText = document.getElementById('feedback-text');
+
+  if (correct) {
+    state.score++;
+    feedbackTitle.textContent = '✓ NAILED IT';
+    feedback.classList.add('show');
+  } else {
+    feedbackTitle.textContent = '✗ NOT QUITE';
+    feedback.classList.add('show', 'wrong');
+  }
+  feedbackText.textContent = q.explain;
+
+  document.getElementById('progress-fill').style.width = `${((state.qIndex + 1) / state.questions.length) * 100}%`;
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.textContent = state.qIndex === state.questions.length - 1 ? 'SEE RESULTS →' : 'NEXT →';
+  nextBtn.classList.add('show');
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  state.qIndex++;
+  if (state.qIndex >= state.questions.length) showResults();
+  else renderQuestion();
+});
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+function showResults() {
+  showScreen('results-screen');
+  const total = state.questions.length;
+  const score = state.score;
+  const pct = (score / total) * 100;
+
+  document.getElementById('results-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('score-total').textContent = `/ ${total}`;
+
+  // Encouraging messages, never anxiety-inducing
+  let msg, sub;
+  if (pct === 100)      { msg = '👑 FLAWLESS PITCH 👑'; sub = 'The board stood up. Untouchable performance.'; }
+  else if (pct >= 80)   { msg = '💎 BOARDROOM-READY';   sub = 'That was clean. Run it back to lock it in.'; }
+  else if (pct >= 60)   { msg = '📈 SOLID PLAY';         sub = 'Strong base. The slips are exactly where to focus next.'; }
+  else if (pct >= 40)   { msg = '🎯 BUILDING THE EMPIRE'; sub = 'Not bad at all. Every miss = a study tip in disguise.'; }
+  else                   { msg = '🛠️ CONSTRUCTION PHASE'; sub = 'No stress. The board respects the grind. Go again.'; }
+
+  document.getElementById('score-message').textContent = msg;
+  document.getElementById('score-sub').textContent = sub;
+
+  // New best?
+  const bests = getBestScores();
+  const previousBest = bests[state.currentRound.key];
+  const newBestEl = document.getElementById('new-best');
+  if (previousBest === undefined || score > previousBest) {
+    setBestScore(state.currentRound.key, score);
+    newBestEl.style.display = 'block';
+  } else {
+    newBestEl.style.display = 'none';
+  }
+}
+
+document.getElementById('play-again-btn').addEventListener('click', () => startRound(state.currentRound));
+document.getElementById('back-home-btn').addEventListener('click', () => {
+  renderHome();
+  showScreen('home-screen');
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderHome();
+</script>
+</body>
+</html>
