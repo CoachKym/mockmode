@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psychology — Mock Mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0A0408;
+    --bg-card: #1F0A14;
+    --bg-card-hi: #2D0F1F;
+    --crimson: #DC2626;
+    --crimson-soft: #F87171;
+    --pink: #EC4899;
+    --pink-soft: #F472B6;
+    --pink-glow: rgba(236, 72, 153, 0.32);
+    --crimson-glow: rgba(220, 38, 38, 0.28);
+    --gold: #F59E0B;
+    --gold-soft: #FCD34D;
+    --gold-glow: rgba(245, 158, 11, 0.35);
+    --text: #F5E5EC;
+    --text-dim: #A07B89;
+    --border: rgba(236, 72, 153, 0.22);
+    --border-gold: rgba(245, 158, 11, 0.32);
+    --correct: #34D399;
+    --correct-glow: rgba(52, 211, 153, 0.25);
+    --wrong: #F43F5E;
+    --wrong-glow: rgba(244, 63, 94, 0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.10), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(220, 38, 38, 0.08), transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 16px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--pink-soft);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-btn:hover { background: var(--bg-card); border-color: var(--pink); }
+
+  .subject-tag {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--pink);
+    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    text-shadow: 0 0 12px var(--pink-glow);
+  }
+
+  /* SCREENS */
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* HOME */
+  .home-hero {
+    text-align: center;
+    padding: 24px 8px 28px;
+  }
+
+  .home-hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.2rem, 7vw, 3rem);
+    font-weight: 900;
+    color: var(--pink);
+    text-shadow: 0 0 24px var(--pink-glow), 0 0 4px rgba(255,255,255,0.3);
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .home-hero .tagline {
+    color: var(--text-dim);
+    font-size: 1rem;
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  .rounds-grid {
+    display: grid;
+    gap: 14px;
+    padding: 8px 0 32px;
+  }
+
+  .round-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .round-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--pink);
+    box-shadow: 0 8px 24px var(--pink-glow);
+  }
+  .round-card.final {
+    border-color: var(--border-gold);
+    background: linear-gradient(135deg, #2A0F0A 0%, #1F0A14 100%);
+  }
+  .round-card.final:hover {
+    border-color: var(--gold);
+    box-shadow: 0 8px 24px var(--gold-glow);
+  }
+
+  .round-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .round-icon { font-size: 1.6rem; }
+
+  .round-best {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: var(--gold-soft);
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .round-best.empty { color: var(--text-dim); opacity: 0.55; }
+
+  .round-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--pink-soft);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .round-card.final h3 { color: var(--gold-soft); }
+
+  .round-card .desc {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+  }
+
+  /* QUIZ */
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .quiz-round-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--pink-soft);
+    letter-spacing: 0.06em;
+    font-size: 0.9rem;
+  }
+
+  .quiz-progress {
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg-card);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--crimson) 0%, var(--pink) 100%);
+    transition: width 0.4s;
+    box-shadow: 0 0 10px var(--pink-glow);
+  }
+
+  .question-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 18px;
+    line-height: 1.45;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    background: var(--bg-deep);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.98rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--pink);
+    background: var(--bg-card-hi);
+  }
+  .option:disabled { cursor: default; opacity: 0.85; }
+
+  .option-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: var(--bg-card-hi);
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--gold-soft);
+    flex-shrink: 0;
+    font-size: 0.85rem;
+  }
+
+  .option.correct {
+    border-color: var(--correct);
+    background: rgba(52, 211, 153, 0.13);
+    box-shadow: 0 0 14px var(--correct-glow);
+  }
+  .option.correct .option-letter { background: var(--correct); color: var(--bg-deep); }
+
+  .option.wrong {
+    border-color: var(--wrong);
+    background: rgba(244, 63, 94, 0.12);
+    box-shadow: 0 0 14px var(--wrong-glow);
+  }
+  .option.wrong .option-letter { background: var(--wrong); color: white; }
+
+  .feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border-left: 3px solid var(--correct);
+    background: rgba(52, 211, 153, 0.08);
+    display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.wrong { border-left-color: var(--wrong); background: rgba(244, 63, 94, 0.07); }
+
+  .feedback-title {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--correct);
+    letter-spacing: 0.05em;
+    font-size: 0.92rem;
+  }
+  .feedback.wrong .feedback-title { color: var(--wrong); }
+
+  .feedback-text {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .next-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--crimson) 0%, var(--pink) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px var(--pink-glow);
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--pink-glow); }
+
+  /* RESULTS */
+  .results-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 22px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .results-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold-soft);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    text-shadow: 0 0 12px var(--gold-glow);
+  }
+  .results-round {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+  }
+
+  .score-circle {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 20px;
+    border: 3px solid var(--pink);
+    border-radius: 50%;
+    background: var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 32px var(--pink-glow), inset 0 0 22px rgba(236, 72, 153, 0.08);
+  }
+  .score-num {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    color: var(--pink-soft);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .score-total {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .new-best {
+    color: var(--gold-soft);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    margin-bottom: 14px;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 14px var(--gold-glow);
+  }
+
+  .score-message {
+    font-size: 1.05rem;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--pink-soft);
+  }
+  .score-sub {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    margin-bottom: 24px;
+  }
+
+  .results-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .btn {
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    letter-spacing: 0.05em;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--crimson) 0%, var(--pink) 100%);
+    color: white;
+    box-shadow: 0 4px 14px var(--pink-glow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold-soft);
+    border: 1.5px solid var(--border-gold);
+  }
+  .btn-secondary:hover { background: var(--bg-card-hi); border-color: var(--gold); }
+
+  @media (max-width: 480px) {
+    .home-hero h1 { font-size: 2rem; }
+    .question-card { padding: 18px; }
+    .question-text { font-size: 1rem; }
+    .option { font-size: 0.94rem; padding: 12px 14px; }
+    .score-circle { width: 110px; height: 110px; }
+    .score-num { font-size: 2.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <a href="index.html" class="back-btn">← Mock Mode</a>
+    <span class="subject-tag">PSYCHOLOGY</span>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen active" id="home-screen">
+    <div class="home-hero">
+      <h1>PSYCHOLOGY</h1>
+      <p class="tagline">Five rituals. One pentagram.</p>
+    </div>
+    <div class="rounds-grid" id="rounds-grid"></div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="quiz-screen">
+    <div class="quiz-header">
+      <span class="quiz-round-name" id="quiz-round-name"></span>
+      <span class="quiz-progress" id="quiz-progress"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div class="feedback-text" id="feedback-text"></div>
+      </div>
+    </div>
+    <button class="next-btn" id="next-btn">NEXT →</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="screen" id="results-screen">
+    <div class="results-card">
+      <div class="results-title" id="results-title">RITUAL COMPLETE</div>
+      <div class="results-round" id="results-round-name"></div>
+      <div class="score-circle">
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-total" id="score-total">/ 0</div>
+      </div>
+      <div class="new-best" id="new-best" style="display:none;">⚡ NEW BEST ⚡</div>
+      <div class="score-message" id="score-message"></div>
+      <div class="score-sub" id="score-sub"></div>
+      <div class="results-actions">
+        <button class="btn btn-primary" id="play-again-btn">PLAY AGAIN</button>
+        <button class="btn btn-secondary" id="back-home-btn">CHOOSE ANOTHER ROUND</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   PSYCHOLOGY QUESTION BANK
+   Edexcel International GCSE — Year 10 Paper 1
+   5 themed rounds + The Pentagram (Final Boss)
+   ============================================================ */
+
+const QUESTION_BANK = {
+
+  /* =========================================================
+     ROUND 1: ORIGIN STORY 🥚
+     Development — Piaget, Kohlberg, Dweck, Gunderson
+     ========================================================= */
+  origin: [
+    { q: "What was the FIRST stage in Piaget's theory of cognitive development?",
+      options: ["Pre-operational", "Sensorimotor", "Concrete operational", "Formal operational"],
+      correct: 1,
+      explain: "Sensorimotor = stage 1, birth to ~2 years. Babies learn through senses and physical actions. They drop things to see what happens. Tiny scientists with no theory." },
+    { q: "A child watches a parent hide a toy under a blanket and immediately looks under the blanket. This shows they have developed...",
+      options: ["Conservation", "Object permanence", "Egocentrism", "Formal operational thinking"],
+      correct: 1,
+      explain: "Object permanence in action — the toy still exists in their mind even when out of sight. Develops around 8 months. Before that, peekaboo is genuinely magic. After, it's just stalling." },
+    { q: "Which Piaget stage covers approximately ages 2-7?",
+      options: ["Sensorimotor", "Pre-operational", "Concrete operational", "Formal operational"],
+      correct: 1,
+      explain: "Pre-operational = ages 2-7. Language explodes, symbolic play kicks in, but logic is wonky. Egocentric, can't conserve, struggles with reversibility." },
+    { q: "EGOCENTRISM in Piaget's theory means a child...",
+      options: ["Is selfish and rude", "Can't see things from another person's perspective", "Always wants to be in charge", "Refuses to share toys"],
+      correct: 1,
+      explain: "Egocentrism ≠ selfish. It means literally not yet able to take another viewpoint. They think you see what they see. Hide their face, no one can see them. Adorable, briefly." },
+    { q: "Gastón shows a child two circles with the same number of marbles, but spaces out one circle. The child says the spaced-out circle has MORE marbles. This shows the child has not yet developed...",
+      options: ["Conservation", "Object permanence", "Egocentrism", "Schemas"],
+      correct: 0,
+      explain: "Conservation = understanding amount stays the same despite changes in appearance. Pre-operational kids fail this. Spread-out marbles LOOK like more, so they ARE more (in their brain)." },
+    { q: "Which Piaget stage covers approximately ages 7-11?",
+      options: ["Pre-operational", "Concrete operational", "Formal operational", "Sensorimotor"],
+      correct: 1,
+      explain: "Concrete operational = ages 7-11. Logic kicks in — but only for concrete (real, physical) things. Conservation? Sorted. Reversibility? Sorted. Abstract hypotheticals? Still loading." },
+    { q: "At which stage do children develop the ability to think ABSTRACTLY and use HYPOTHETICAL reasoning?",
+      options: ["Sensorimotor", "Pre-operational", "Concrete operational", "Formal operational"],
+      correct: 3,
+      explain: "Formal operational (~11+). 'What if humans had three legs?' becomes thinkable. Logic detaches from physical reality. Maths, philosophy, planning a future — all unlocked." },
+    { q: "Someone in the FORMAL OPERATIONAL stage is asked to imagine a 14-year-old's life in 20 years. They would be able to...",
+      options: ["Only describe what they see right now", "Use hypothetical reasoning to imagine multiple possible futures", "Refuse to answer because they can't see it", "Only think about themselves"],
+      correct: 1,
+      explain: "Formal operational = abstract + hypothetical thinking online. They can build mental models of futures, weigh possibilities, imagine multiple outcomes. The 'what if' brain has booted up." },
+    { q: "A SCHEMA in Piaget's theory is...",
+      options: ["A type of dance", "A mental framework or 'file' for understanding the world", "A research method", "A school timetable"],
+      correct: 1,
+      explain: "Schema = mental file. 'Dog' schema includes four legs, fur, barks, wags tail. New info gets sorted into existing schemas (assimilation) or schemas adjust (accommodation)." },
+    { q: "ACCOMMODATION (in Piaget) means...",
+      options: ["Booking a hotel", "Changing or creating a schema to fit new information", "Memorising new vocabulary", "Helping someone else learn"],
+      correct: 1,
+      explain: "Accommodation = 'wait, that doesn't fit — I need to update my mental model.' Kid learns a horse ≠ a dog. New 'horse' schema gets created. Brain rewires to match reality." },
+    { q: "Kohlberg's FIRST level of morality is called...",
+      options: ["Pre-conventional", "Conventional", "Post-conventional", "Anti-conventional"],
+      correct: 0,
+      explain: "Pre-conventional = morality based on consequences for YOU. 'Don't steal because you'll get caught.' Self-interest is the whole game. Mostly young children." },
+    { q: "PRE-CONVENTIONAL morality is based on...",
+      options: ["Avoiding punishment and gaining rewards for yourself", "Following society's rules and laws", "Personal ethical principles", "Religious texts only"],
+      correct: 0,
+      explain: "Pre-conventional = 'what's in it for me / what gets me in trouble?' Self-focused. Mostly young kids. Some adults stay here. Tragic but real." },
+    { q: "CONVENTIONAL morality is based on...",
+      options: ["Personal interest only", "Following social rules and being seen as 'good'", "Universal ethical principles above all laws", "Whatever feels good in the moment"],
+      correct: 1,
+      explain: "Conventional = 'follow the rules because they ARE the rules.' Approval-seeking, law-abiding. Most teens and adults sit here. Society's reliable backbone." },
+    { q: "POST-CONVENTIONAL morality is based on...",
+      options: ["Avoiding punishment", "Following all laws without question", "Personal ethical principles, even if they conflict with laws", "Doing what your friends do"],
+      correct: 2,
+      explain: "Post-conventional = 'I follow my own ethical compass, even when laws are wrong.' Civil disobedience, conscientious objectors, whistleblowers. Rare and disruptive." },
+    { q: "Dweck's 'FIXED MINDSET' is the belief that...",
+      options: ["Intelligence and ability are unchangeable — you're either smart or you're not", "Hard work and practice can grow your abilities", "You should never try new things", "Mistakes are good for learning"],
+      correct: 0,
+      explain: "Fixed mindset = 'talent is innate. If I'm bad at maths, I'll always be bad at maths.' Avoids challenges (because failure = proof of weakness). Caps potential at the start line." },
+    { q: "Dweck's 'GROWTH MINDSET' is the belief that...",
+      options: ["Some people are just born smart and others aren't", "Abilities can be developed through effort and practice", "Failure means you should give up", "Praise should focus on natural talent"],
+      correct: 1,
+      explain: "Growth mindset = 'I can get better at this with effort.' Embraces challenge. Sees failure as data, not verdict. Strong correlation with actually getting better at things." },
+    { q: "Gunderson et al. (2013) studied...",
+      options: ["Memory in elderly patients", "How parents' praise of toddlers affects children's later mindset", "The effects of caffeine on revision", "Children's reactions to spider phobias"],
+      correct: 1,
+      explain: "Gunderson 2013 = praise study. Recorded how parents praised toddlers (14-38 months), then checked the kids' mindsets at age 7-8. Process praise → growth mindset. Person praise → fixed." },
+    { q: "In Gunderson (2013), 'PROCESS PRAISE' refers to praising...",
+      options: ["The child's natural intelligence ('you're so smart')", "The child's effort or strategy ('you worked hard on that')", "The child's appearance", "The end result only"],
+      correct: 1,
+      explain: "Process praise = effort and strategy. Linked to growth mindset later. Person praise ('you're smart') sounds nice but creates a fixed mindset — kids feel pressure to keep BEING smart instead of getting better." }
+  ],
+
+  /* =========================================================
+     ROUND 2: THE MIND PALACE 🧠
+     Memory — MSM, Bartlett, Peterson, amnesia
+     ========================================================= */
+  palace: [
+    { q: "What are the THREE main stores in the Multi-Store Model of Memory?",
+      options: ["Past, present, future", "Sensory register, short-term memory, long-term memory", "Fast, medium, slow", "Visual, audio, written"],
+      correct: 1,
+      explain: "Multi-store model: Sensory Register → STM → LTM. Information flows through these stages, with attention and rehearsal as the gatekeepers between them." },
+    { q: "The SENSORY REGISTER stores information from your senses for...",
+      options: ["Roughly your whole life", "About 15-30 seconds", "A fraction of a second to a few seconds", "Exactly 7 minutes"],
+      correct: 2,
+      explain: "Sensory register = ultra-short. The brain's first impression buffer. Most of it gets discarded instantly. Only what you ATTEND to gets passed to STM." },
+    { q: "The capacity of SHORT-TERM MEMORY is roughly...",
+      options: ["7 ± 2 items", "100 items", "Unlimited", "Just 1 item"],
+      correct: 0,
+      explain: "Miller's Magic Number: 7 plus or minus 2 (so 5-9 items). Why phone numbers used to be 7 digits. Beyond that, your brain starts dropping items unless you chunk them." },
+    { q: "The DURATION of short-term memory (without rehearsal) is roughly...",
+      options: ["A lifetime", "About 18-30 seconds", "Several hours", "Exactly 5 minutes"],
+      correct: 1,
+      explain: "STM duration = ~18-30 seconds without rehearsal. Peterson & Peterson nailed this down with trigrams. Without active repetition, info decays fast." },
+    { q: "The DURATION of long-term memory can be...",
+      options: ["Just 5 minutes", "About 30 seconds", "From a few minutes to a lifetime", "Always exactly 24 hours"],
+      correct: 2,
+      explain: "LTM duration = potentially forever. Doesn't mean it's accurate though — looking at you, Bartlett. Your favourite childhood memory is probably 60% fan-fiction by now." },
+    { q: "Information in SHORT-TERM memory is mainly encoded by...",
+      options: ["Visual encoding", "Acoustic encoding (sound)", "Semantic encoding (meaning)", "Tactile encoding (touch)"],
+      correct: 1,
+      explain: "STM = mostly acoustic. We hear words in our head as we hold them. That's why similar-SOUNDING items (B/D/V/T) get confused in STM more than similar-meaning ones." },
+    { q: "Information in LONG-TERM memory is mainly encoded by...",
+      options: ["Acoustic encoding (sound)", "Semantic encoding (meaning)", "Visual encoding only", "Random encoding"],
+      correct: 1,
+      explain: "LTM = semantic. Stored by MEANING, not sound. Why you remember the gist of a film months later but not the exact dialogue." },
+    { q: "What is the role of ATTENTION in memory?",
+      options: ["It moves information from sensory register into short-term memory", "It deletes long-term memories", "It's not important to memory", "It only affects emotions"],
+      correct: 0,
+      explain: "Attention = the bouncer at STM's door. Without it, sensory info evaporates. Why you can't remember something someone said 5 seconds ago if you weren't actually listening." },
+    { q: "What process moves information from short-term to long-term memory?",
+      options: ["Forgetting", "Rehearsal", "Sleeping", "Eating"],
+      correct: 1,
+      explain: "Rehearsal = repetition. Repeat info enough and STM hands it off to LTM for safekeeping. Why flashcards work. Why cramming the morning of barely sticks." },
+    { q: "RETRIEVAL in memory means...",
+      options: ["Storing new information", "Forgetting information", "Getting information back out of memory when you need it", "Encoding information"],
+      correct: 2,
+      explain: "Retrieval = pulling info back out of LTM. The 'tip of my tongue' feeling = retrieval glitching. Strong retrieval cues = better recall. Why context matters in exams." },
+    { q: "ENCODING in memory means...",
+      options: ["Forgetting information over time", "Converting information into a form the brain can store", "Recalling information from the past", "Sharing information with others"],
+      correct: 1,
+      explain: "Encoding = the brain converting raw input into a storable format (sound, image, meaning). Bad encoding = bad recall later. Garbage in, garbage out." },
+    { q: "STORAGE in memory means...",
+      options: ["The process of forgetting", "Holding information over time so it can be retrieved later", "Converting information into a code", "Asking someone else to remember for you"],
+      correct: 1,
+      explain: "Storage = keeping the info in your system. STM = brief. LTM = potentially forever. Decay and interference can sabotage both. Time is the enemy." },
+    { q: "ANTEROGRADE AMNESIA is the inability to...",
+      options: ["Remember anything from before the brain injury", "Form NEW memories after a brain injury", "Speak after a brain injury", "Recognise faces only"],
+      correct: 1,
+      explain: "Anterograde = NEW memories blocked. You remember childhood, your job, your name — but anything that happens AFTER the injury slides off. Like writing on Teflon." },
+    { q: "RETROGRADE AMNESIA is the inability to...",
+      options: ["Form new memories", "Remember things from BEFORE the brain injury", "Recognise familiar people only", "Remember future events"],
+      correct: 1,
+      explain: "Retrograde = OLD memories wiped (or partially wiped). Past gone, present-forward intact. Sometimes memories return gradually. Sometimes they don't." },
+    { q: "Bartlett's (1932) study used a story called...",
+      options: ["The War of the Worlds", "The War of the Ghosts", "The Lord of the Rings", "The Gettysburg Address"],
+      correct: 1,
+      explain: "War of the Ghosts — a Native American folk tale. Bartlett picked it specifically because it would be UNFAMILIAR to his British participants. The unfamiliarity was the whole experimental point." },
+    { q: "Bartlett's main finding was that memory is...",
+      options: ["A perfect recording of events", "Reconstructive — shaped by our existing schemas", "Always 100% accurate if rehearsed", "Stored only in pictures"],
+      correct: 1,
+      explain: "Memory = reconstruction, not recording. Bartlett showed people unconsciously edit memories to fit their existing schemas. Your brain is a creative writer pretending to be a documentary maker." },
+    { q: "In Peterson and Peterson (1959), participants had to remember...",
+      options: ["Long detailed stories", "Nonsense trigrams (e.g. 'XPJ')", "Photos of family members", "Lists of food items"],
+      correct: 1,
+      explain: "Trigrams = three random consonants like XPJ or HCV. Meaningless on purpose — couldn't be chunked or attached to existing knowledge. Pure STM stress test." },
+    { q: "In Peterson and Peterson, why did participants count backwards in 3s after seeing the trigram?",
+      options: ["To test their maths skills", "To prevent rehearsal so they couldn't keep the trigram in STM", "To check if they were paying attention", "To make the study longer"],
+      correct: 1,
+      explain: "Counting backwards = clever sabotage. Stops you mentally repeating the trigram. Without rehearsal, STM duration was about 18 seconds. Brutal but elegant design." }
+  ],
+
+  /* =========================================================
+     ROUND 3: INNER DEMONS 👁️
+     Psychological problems — clinical, treatment-positive tone
+     ========================================================= */
+  demons: [
+    { q: "Which of these is a SYMPTOM of depression?",
+      options: ["Persistent low mood lasting weeks or longer", "Excitement about everyday tasks", "Above-average energy", "Improved focus"],
+      correct: 0,
+      explain: "Depression = persistent low mood lasting weeks+, often with low energy, changes in sleep/appetite, loss of interest. Different from feeling sad for a day. Treatable — both therapy and medication work for many people." },
+    { q: "UNIPOLAR depression means...",
+      options: ["Depression that comes with manic episodes", "Depression without manic episodes (one direction only)", "Depression that lasts only one day", "Depression that only affects women"],
+      correct: 1,
+      explain: "Unipolar = one pole. Just the depression, no manic highs. Bipolar disorder has BOTH poles. Different conditions, different treatments." },
+    { q: "Which of these is a COGNITIVE symptom of depression?",
+      options: ["Trouble sleeping", "Persistent negative thoughts about yourself, the world, and the future", "Slower physical movements", "Loss of appetite"],
+      correct: 1,
+      explain: "Cognitive = thinking patterns. Beck called it the 'negative triad' — distorted negative views of self, world, and future. CBT specifically targets and challenges these thought patterns." },
+    { q: "BECK'S NEGATIVE TRIAD describes negative thoughts about three things. They are...",
+      options: ["Family, school, friends", "The self, the world, and the future", "Past, present, future", "Body, mind, soul"],
+      correct: 1,
+      explain: "Beck's three pessimism flavours: 'I'm worthless' (self), 'everything is bad' (world), 'nothing will improve' (future). CBT exists to interrupt and challenge these thought patterns. They're not facts — they're symptoms." },
+    { q: "Low activity of which BRAIN CHEMICAL is linked to depression?",
+      options: ["Adrenaline", "Serotonin", "Insulin", "Calcium"],
+      correct: 1,
+      explain: "Serotonin = neurotransmitter linked to mood regulation. Low serotonin activity is one factor in depression. Why SSRIs (which boost serotonin availability) are commonly prescribed." },
+    { q: "SSRIs (used to treat depression) work by...",
+      options: ["Blocking serotonin completely", "Keeping more serotonin available in the brain by blocking its reuptake", "Removing all emotions", "Putting the patient to sleep"],
+      correct: 1,
+      explain: "SSRI = Selective Serotonin Reuptake Inhibitor. Stops the brain from rapidly removing serotonin from the gap between neurons. More serotonin available = mood support. Not a happy pill — they help stabilise so other things (therapy, sleep, life) can do their work." },
+    { q: "CBT stands for...",
+      options: ["Cognitive Behavioural Therapy", "Calm Body Treatment", "Counter-Brain Tactics", "Clinical Brain Therapy"],
+      correct: 0,
+      explain: "Cognitive Behavioural Therapy. Premise: thoughts → feelings → behaviour. Change distorted thoughts, the rest follows. Strong evidence base, especially for depression and anxiety." },
+    { q: "How does CBT help someone with depression?",
+      options: ["By giving them medication", "By identifying and challenging negative thought patterns", "By telling them to ignore their feelings", "By avoiding all difficult topics"],
+      correct: 1,
+      explain: "CBT trains you to notice negative thoughts ('I'm useless'), question them ('what's the actual evidence?'), and replace them with more accurate ones. Over time, this rewires the patterns. Skills stick around after treatment ends." },
+    { q: "ADDICTION is generally defined as...",
+      options: ["A short-term hobby", "A compulsive need to engage in a behaviour or use a substance despite negative consequences", "A choice that's easy to stop", "Only applies to drugs and alcohol"],
+      correct: 1,
+      explain: "Addiction = compulsive engagement despite harm. Brain's reward system gets hijacked. Applies to substances AND behaviours (gambling, gaming, internet). Not a moral failure — it's a recognised condition with effective treatments." },
+    { q: "TOLERANCE in addiction means...",
+      options: ["The person becomes very calm", "Needing more of the substance/behaviour to get the same effect", "The person tolerates other people better", "The body fully recovers"],
+      correct: 1,
+      explain: "Tolerance = brain adjusts to the regular hit. Same amount stops working. So the dose creeps up. One of the warning signs that addiction is forming." },
+    { q: "WITHDRAWAL in addiction means...",
+      options: ["Becoming more social", "Unpleasant physical or psychological symptoms when stopping the substance/behaviour", "Choosing to ignore the addiction", "A type of therapy"],
+      correct: 1,
+      explain: "Withdrawal = the body and brain protesting their forced re-balancing. Unpleasant. Why quitting suddenly is hard and (depending on the substance) often needs medical support." },
+    { q: "SALIENCE in addiction means...",
+      options: ["The activity dominates a person's thoughts and life", "The person feels nothing", "The person becomes wealthy", "The activity is private"],
+      correct: 0,
+      explain: "Salience = it takes over. Thoughts, planning, time, energy — all directed at the activity. Other things (relationships, work, hobbies) get crowded out." },
+    { q: "LEARNING THEORY explains addiction through...",
+      options: ["Genetics only", "Reinforcement — the behaviour is rewarded (e.g. dopamine release), so it's repeated", "The phases of the moon", "Pure willpower"],
+      correct: 1,
+      explain: "Learning theory: behaviour gets rewarded (pleasure, dopamine, escape from stress) → brain learns 'do that again' → repeat → addiction. Operant conditioning, but make it brain chemistry." },
+    { q: "POSITIVE REINFORCEMENT in addiction means the person...",
+      options: ["Gets something pleasurable from the behaviour, making them repeat it", "Is punished for the behaviour", "Forgets why they started", "Stops the behaviour quickly"],
+      correct: 0,
+      explain: "Positive reinforcement = pleasure follows behaviour → behaviour repeats. Jeremie wins an auction → dopamine hit → brain logs 'do that again.' Loop established. Tough loop to break without help." },
+    { q: "NEGATIVE REINFORCEMENT in addiction means the person engages in the behaviour to...",
+      options: ["Be punished", "AVOID or escape something unpleasant (e.g. stress, withdrawal)", "Receive a gift", "Talk to themselves negatively"],
+      correct: 1,
+      explain: "Negative reinforcement = removing something bad. The relief reinforces the behaviour. Different from positive (pleasure-seeking) but equally powerful in maintaining addiction." },
+    { q: "Young (2007) studied the use of CBT to treat...",
+      options: ["Public speaking anxiety", "Internet addiction", "Sleep disorders", "Eating disorders only"],
+      correct: 1,
+      explain: "Young 2007 = CBT for internet addiction. Showed CBT helped clients manage symptoms over multiple sessions, with continued improvement at 6-month follow-up. Evidence that behavioural addictions respond to therapy." },
+    { q: "One STRENGTH of CBT compared to drug treatments is that CBT...",
+      options: ["Works instantly", "Tackles the underlying thought patterns rather than just managing symptoms", "Is always free", "Requires no effort from the patient"],
+      correct: 1,
+      explain: "CBT addresses the THOUGHTS that drive the behaviour. Drugs manage the chemistry. CBT skills stick around after treatment ends — drug effects don't. Often best results come from combining both." },
+    { q: "One LIMITATION of using SSRIs alone to treat depression is that they...",
+      options: ["Always cure depression in one day", "May have side effects and don't address the underlying thought patterns", "Are illegal", "Only work on children"],
+      correct: 1,
+      explain: "SSRIs help mood but don't change the THOUGHT PATTERNS feeding depression. Side effects vary (sleep, appetite, etc.). Often combined with therapy for best long-term outcomes." }
+  ],
+
+  /* =========================================================
+     ROUND 4: THE LAB ⚗️
+     Research methods — IV/DV, sampling, ethics, data
+     ========================================================= */
+  lab: [
+    { q: "The INDEPENDENT VARIABLE in an experiment is...",
+      options: ["The variable that's measured", "The variable the researcher CHANGES or manipulates", "Always the result", "Never controlled"],
+      correct: 1,
+      explain: "IV = what YOU change. The cause you're testing. In Alessia's study (easy/medium/hard task), task difficulty = IV. Researcher's choice." },
+    { q: "The DEPENDENT VARIABLE in an experiment is...",
+      options: ["The variable the researcher controls", "The variable that's MEASURED to see the effect", "Always nothing", "Only used in mathematics"],
+      correct: 1,
+      explain: "DV = what you measure. The effect. In Alessia's study, the test scores = DV. Depends on the IV. Cause vs effect = IV vs DV." },
+    { q: "A HYPOTHESIS is...",
+      options: ["A guess made after the experiment", "A testable prediction made BEFORE the experiment", "A type of conclusion", "A research method"],
+      correct: 1,
+      explain: "Hypothesis = prediction you set up to test. Specific, testable, before you collect data. 'Students given moderate-difficulty tasks will improve more than those given easy or hard tasks.' Then you test it." },
+    { q: "A SAMPLE in psychological research is...",
+      options: ["The whole population being studied", "A smaller group selected to represent the wider population", "The experimenter only", "The control group only"],
+      correct: 1,
+      explain: "Sample = the chunk you actually study. Can't test all teenagers in the world, so you pick a representative sample. Bigger + more representative = more generalisable findings." },
+    { q: "RANDOM SAMPLING means...",
+      options: ["Picking only the people you know", "Every member of the population has an equal chance of being selected", "Choosing the easiest people to find", "Only selecting children"],
+      correct: 1,
+      explain: "Random = no bias in selection. Names from a hat. Random number generators. Reduces selection bias. Hard in practice — most studies use convenience samples instead." },
+    { q: "QUANTITATIVE data is...",
+      options: ["Numerical data (numbers, percentages, scores)", "Only opinions and feelings", "Always inaccurate", "Only collected through interviews"],
+      correct: 0,
+      explain: "Quantitative = numbers. Test scores, percentages, frequencies. Easy to graph, compare, run statistics on. Gives you the 'what' but not the 'why'." },
+    { q: "QUALITATIVE data is...",
+      options: ["Numerical statistics", "Detailed descriptions, opinions, and feelings (in words)", "Always faster to collect", "Only used in maths"],
+      correct: 1,
+      explain: "Qualitative = words and detail. Interview transcripts, open-ended survey answers. Gives the 'why' behind the numbers. Harder to analyse but richer insight." },
+    { q: "A CLOSED QUESTION on a questionnaire...",
+      options: ["Allows long, detailed answers", "Has fixed answer options (e.g. yes/no, multiple choice)", "Can't be answered", "Is always offensive"],
+      correct: 1,
+      explain: "Closed = limited choices. Easy to count and graph. Quantitative data. Downside: forces answers into boxes that might not fit reality." },
+    { q: "RELIABILITY in research means...",
+      options: ["The study sounds convincing", "The study would produce the SAME results if repeated", "The researcher is famous", "The participants enjoyed it"],
+      correct: 1,
+      explain: "Reliability = consistency. Run it again, get the same results. A reliable study can still be wrong though (flat-earthers are very consistent). Reliability ≠ validity." },
+    { q: "VALIDITY in research means...",
+      options: ["The study uses big words", "The study actually MEASURES what it claims to measure", "The study took a long time", "The participants were paid"],
+      correct: 1,
+      explain: "Validity = measuring what you say you're measuring. An IQ test that just measures how good you are at IQ tests = low validity. Different beast from reliability." },
+    { q: "INFORMED CONSENT in research ethics means...",
+      options: ["Telling participants nothing", "Participants are told what the study involves and agree to take part", "Forcing people to participate", "Only researchers can consent"],
+      correct: 1,
+      explain: "Informed consent = participants understand what they're signing up for and agree freely. Foundation of ethical research. Without it, your study is now a scandal instead of evidence." },
+    { q: "A DEBRIEF after a study involves...",
+      options: ["Paying participants", "Telling participants the true purpose of the study and answering questions", "Hiding the results forever", "Asking them to come back next week"],
+      correct: 1,
+      explain: "Debrief = post-study honesty. Especially important if deception was used. Participants leave knowing what happened, why, and that they can withdraw their data if they want." },
+    { q: "One STRENGTH of using questionnaires is that they...",
+      options: ["Always give in-depth qualitative data", "Can collect data from many participants quickly and cheaply", "Are always 100% honest", "Only work in person"],
+      correct: 1,
+      explain: "Questionnaires scale. Send to thousands online for almost nothing. Fast, cheap, quantitative. Trade-off: shallow answers, low response rates, people lie or rush." },
+    { q: "One WEAKNESS of using questionnaires is that participants...",
+      options: ["Can never answer them", "May give socially desirable answers (lie to look good) or rush through", "Always tell the complete truth", "Get bored and become more accurate"],
+      correct: 1,
+      explain: "Social desirability bias = people answer how they THINK they should, not how they actually feel. Plus rushed clicks, missing context, no follow-up questions. Garbage in, garbage out." },
+    { q: "When DRAWING CONCLUSIONS from data, you should...",
+      options: ["Make claims that go far beyond what the data shows", "Stick to what the data actually demonstrates", "Ignore the data if it's inconvenient", "Only mention the most exciting result"],
+      correct: 1,
+      explain: "Conclusions = stay within the data. If your study shows correlation, don't claim causation. Overstating findings = how psychology gets bad headlines. Stay grounded in the numbers." },
+    { q: "The MEAN of a dataset is...",
+      options: ["The most common value", "The middle value when sorted", "The average (sum ÷ number of values)", "The largest value"],
+      correct: 2,
+      explain: "Mean = the average. Add everything, divide by how many. Sensitive to extreme outliers (one person scoring 0 drags the mean down). Median is more robust for skewed data." },
+    { q: "A BAR CHART is best used for showing...",
+      options: ["Continuous data over time", "Comparing categories or groups", "Only single values", "The exact same thing as a pie chart"],
+      correct: 1,
+      explain: "Bar charts = compare categories. Group A vs Group B vs Group C. Like Alessia's chart of three groups' test performance. Line graphs = continuous data over time." },
+    { q: "If a study uses a SMALL sample of only 10 people, the results...",
+      options: ["Can be generalised to everyone in the world", "May not be generalisable to wider populations", "Are always more accurate than larger studies", "Don't need any analysis"],
+      correct: 1,
+      explain: "Small samples = less representative. 10 people might be weird, lucky, or atypical. Bigger samples → more confidence the pattern reflects the wider population. Sample size matters." }
+  ],
+
+  /* =========================================================
+     ROUND 5: HALL OF SOULS 📜
+     Named studies & key debates
+     ========================================================= */
+  souls: [
+    { q: "Gunderson et al. (2013) studied...",
+      options: ["The effects of caffeine on memory", "Parents' praise of toddlers and its link to mindset years later", "Sleep patterns in teenagers", "Recovery from brain injuries"],
+      correct: 1,
+      explain: "Gunderson 2013: tracked how parents praised toddlers (14-38 months), then checked the same kids' mindsets at age 7-8. Praise type predicted growth vs fixed mindset later." },
+    { q: "In Gunderson (2013), PROCESS PRAISE links to which type of motivational framework in children later?",
+      options: ["Fixed (entity) framework", "Incremental (growth/malleable) framework", "Religious framework", "No effect"],
+      correct: 1,
+      explain: "Process praise ('you worked hard') → growth mindset later. Person praise ('you're so smart') → fixed mindset later. The TYPE of praise shapes how kids see ability for years." },
+    { q: "In Gunderson (2013), one key finding about gender was that...",
+      options: ["Girls received more process praise than boys", "Boys received more process praise than girls", "Praise was identical across genders", "Only boys received any praise"],
+      correct: 1,
+      explain: "Boys got more PROCESS praise, girls got more PERSON praise. Possible early seed for the gendered confidence gap that shows up later in school and careers. Subtle but persistent." },
+    { q: "Bartlett's 1932 study used a story called...",
+      options: ["The War of the Worlds", "The War of the Ghosts", "The Hobbit", "Peter Pan"],
+      correct: 1,
+      explain: "War of the Ghosts — a Native American folk tale Bartlett picked because it would be UNFAMILIAR to his British participants. The unfamiliarity was the whole experimental point." },
+    { q: "What was Bartlett's main finding from the War of the Ghosts study?",
+      options: ["People remembered the story perfectly", "People reconstructed and distorted the story to fit their own cultural schemas", "People completely refused to remember it", "Memory is identical for everyone"],
+      correct: 1,
+      explain: "Memory = reconstruction, not recording. Participants warped the story over time, swapping unfamiliar elements for familiar ones. Schemas filled in the gaps. Memory is creative, not photographic." },
+    { q: "Bartlett's concept of 'reconstructive memory' means that memory is...",
+      options: ["A perfect recording", "Actively rebuilt each time it's recalled, shaped by existing schemas", "Stored as photos in the brain", "Only stored short-term"],
+      correct: 1,
+      explain: "Reconstructive memory = your brain rebuilds the memory every time you access it, using current schemas. That's why memories drift over time. Retelling them changes them. Eyewitness testimony, ruined." },
+    { q: "Peterson and Peterson (1959) investigated the duration of...",
+      options: ["Long-term memory", "Short-term memory without rehearsal", "Sleep cycles", "Reaction times"],
+      correct: 1,
+      explain: "P&P 1959 = STM duration study. They wanted to know how long info lasts in STM if you can't rehearse it. Spoiler: not long." },
+    { q: "In Peterson and Peterson, participants were given trigrams (e.g. 'XPJ') and then asked to...",
+      options: ["Sleep for 20 minutes", "Count backwards in 3s from a number, to prevent rehearsal", "Repeat the trigram out loud", "Write the trigram down"],
+      correct: 1,
+      explain: "Counting backwards = clever sabotage. Stops you mentally repeating the trigram. Without rehearsal, the trigram fades fast — letting them measure pure STM duration." },
+    { q: "Peterson and Peterson found that without rehearsal, short-term memory lasts about...",
+      options: ["A lifetime", "18 seconds", "10 minutes", "1 hour"],
+      correct: 1,
+      explain: "~18 seconds without rehearsal. Brutal demonstration of how fragile STM actually is. After 18 seconds of distraction, most participants couldn't remember three random letters." },
+    { q: "Young (2007) investigated...",
+      options: ["Treatments for depression in elderly people", "The use of CBT for internet addiction", "Causes of childhood phobias", "Sleep deprivation in students"],
+      correct: 1,
+      explain: "Young 2007 = CBT for internet addiction. Looked at how clients responded to CBT sessions, with check-ins at 6-month follow-up. Evidence that behavioural addictions respond to talking therapy." },
+    { q: "In Young (2007), at the 6-month follow-up, ratings of how helpful clients found the sessions...",
+      options: ["Got worse", "Stayed exactly the same", "Increased for all outcome goals", "Were not measured"],
+      correct: 2,
+      explain: "Follow-up scores went UP for all outcome goals. Suggests CBT for internet addiction has lasting benefits beyond the treatment period itself. Skills stick around — that's the goal." },
+    { q: "REDUCTIONISM in psychology is the idea of...",
+      options: ["Adding lots of complexity to explanations", "Explaining complex behaviour by breaking it down to simpler components (e.g. just brain chemistry)", "Avoiding research altogether", "Increasing the size of studies"],
+      correct: 1,
+      explain: "Reductionism = strip behaviour down to its smallest parts. 'Depression is just low serotonin.' Useful for science, but loses the bigger picture. Trade-off for clarity." },
+    { q: "An EXAMPLE of reductionism in psychology would be explaining depression purely as...",
+      options: ["A complex interaction of biology, environment, and thought patterns", "Just low levels of serotonin in the brain", "A spiritual issue only", "Something that doesn't exist"],
+      correct: 1,
+      explain: "'Depression = low serotonin' is the classic reductionist line. Not wrong exactly, but incomplete. Real depression is biology + thought patterns + life events + social context. All of it matters." },
+    { q: "HOLISM is the OPPOSITE of reductionism, meaning...",
+      options: ["Explaining behaviour by considering the whole person and all influences", "Only looking at one tiny factor", "Avoiding research", "Repeating studies endlessly"],
+      correct: 0,
+      explain: "Holism = whole picture. Behaviour = biology + cognition + environment + social factors all interacting. Harder to study scientifically, but more realistic. Reductionism vs holism = the tension at psychology's heart." },
+    { q: "The NATURE side of the nature-vs-nurture debate argues behaviour is mainly shaped by...",
+      options: ["Upbringing and environment", "Genetics and biology", "Money", "School systems"],
+      correct: 1,
+      explain: "Nature = born with it. Genes, brain structure, hormones. The 'wired this way' camp. Twin studies are the classic evidence — identical twins raised apart often share traits." },
+    { q: "The NURTURE side of the nature-vs-nurture debate argues behaviour is mainly shaped by...",
+      options: ["Genes only", "Environment, upbringing, and experiences", "Random luck", "Diet alone"],
+      correct: 1,
+      explain: "Nurture = environment shapes you. Family, culture, school, experiences. The 'blank slate' camp. Modern psychology mostly accepts both interact (epigenetics, gene-environment correlation)." },
+    { q: "In Piaget's CONSERVATION task with marbles, a child in the pre-operational stage would say that the spread-out circle has...",
+      options: ["Fewer marbles", "More marbles", "Exactly the same number of marbles", "No marbles at all"],
+      correct: 1,
+      explain: "Pre-operational kids = appearance over logic. Spread out LOOKS like more, so it IS more (in their brain). Conservation hasn't installed yet. Gets fixed by ~age 7 in concrete operational stage." },
+    { q: "Why is it important for psychological research to use BOTH quantitative AND qualitative methods?",
+      options: ["It doubles the cost for no benefit", "Quantitative gives the 'what', qualitative gives the 'why' — together they give a fuller picture", "Only one is allowed", "Neither is useful"],
+      correct: 1,
+      explain: "Numbers tell you the pattern. Words tell you the meaning behind the pattern. A study with 10,000 stat-only responses misses depth. A study with 5 deep interviews misses breadth. Combining = best practice." }
+  ]
+};
+
+/* ============================================================
+   ROUND CONFIG
+   ============================================================ */
+const ROUNDS = [
+  { key: 'origin',  title: 'ORIGIN STORY',     icon: '🥚', tagline: 'Development — Piaget, Kohlberg, Dweck', qCount: 10 },
+  { key: 'palace',  title: 'THE MIND PALACE',  icon: '🧠', tagline: 'Memory — MSM, Bartlett, amnesia',       qCount: 10 },
+  { key: 'demons',  title: 'INNER DEMONS',     icon: '👁️', tagline: 'Depression, addiction, treatments',     qCount: 10 },
+  { key: 'lab',     title: 'THE LAB',          icon: '⚗️', tagline: 'Research methods & data',                qCount: 10 },
+  { key: 'souls',   title: 'HALL OF SOULS',    icon: '📜', tagline: 'Named studies & big debates',           qCount: 10 },
+  { key: 'pentagram', title: 'THE PENTAGRAM',  icon: '🔥', tagline: '15 random — five points of the star',   qCount: 15, isFinal: true }
+];
+
+const STORAGE_KEY = 'psychology-mock-mode-v1';
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  questions: [],
+  qIndex: 0,
+  score: 0,
+  answered: false,
+  currentRound: null
+};
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getBestScores() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function setBestScore(roundKey, score) {
+  const scores = getBestScores();
+  scores[roundKey] = score;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(scores)); } catch {}
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   HOME SCREEN
+   ============================================================ */
+function renderHome() {
+  const grid = document.getElementById('rounds-grid');
+  const bests = getBestScores();
+  grid.innerHTML = '';
+
+  ROUNDS.forEach(round => {
+    const best = bests[round.key];
+    const bestText = best !== undefined
+      ? `BEST ${best}/${round.qCount}`
+      : `${round.qCount} QUESTIONS`;
+    const bestClass = best !== undefined ? 'round-best' : 'round-best empty';
+
+    const card = document.createElement('div');
+    card.className = 'round-card' + (round.isFinal ? ' final' : '');
+    card.innerHTML = `
+      <div class="round-card-top">
+        <div class="round-icon">${round.icon}</div>
+        <div class="${bestClass}">${bestText}</div>
+      </div>
+      <h3>${round.title}</h3>
+      <div class="desc">${round.tagline}</div>
+    `;
+    card.addEventListener('click', () => startRound(round));
+    grid.appendChild(card);
+  });
+}
+
+/* ============================================================
+   START ROUND
+   ============================================================ */
+function startRound(round) {
+  state.currentRound = round;
+  state.qIndex = 0;
+  state.score = 0;
+  state.answered = false;
+
+  let pool;
+  if (round.isFinal) {
+    pool = Object.values(QUESTION_BANK).flat();
+  } else {
+    pool = QUESTION_BANK[round.key];
+  }
+
+  state.questions = shuffle(pool).slice(0, round.qCount);
+
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+/* ============================================================
+   RENDER QUESTION
+   ============================================================ */
+function renderQuestion() {
+  state.answered = false;
+
+  const q = state.questions[state.qIndex];
+  document.getElementById('quiz-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('quiz-progress').textContent = `${state.qIndex + 1} / ${state.questions.length}`;
+  document.getElementById('progress-fill').style.width = `${(state.qIndex / state.questions.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.q;
+
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i));
+    optionsEl.appendChild(btn);
+  });
+
+  const feedback = document.getElementById('feedback');
+  feedback.className = 'feedback';
+  feedback.classList.remove('show', 'wrong');
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.remove('show');
+}
+
+/* ============================================================
+   HANDLE ANSWER
+   ============================================================ */
+function handleAnswer(choice) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.questions[state.qIndex];
+  const correct = choice === q.correct;
+  const allButtons = document.querySelectorAll('.option');
+
+  allButtons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    else if (i === choice) b.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById('feedback');
+  const feedbackTitle = document.getElementById('feedback-title');
+  const feedbackText = document.getElementById('feedback-text');
+
+  if (correct) {
+    state.score++;
+    feedbackTitle.textContent = '✓ NAILED IT';
+    feedback.classList.add('show');
+  } else {
+    feedbackTitle.textContent = '✗ NOT QUITE';
+    feedback.classList.add('show', 'wrong');
+  }
+  feedbackText.textContent = q.explain;
+
+  document.getElementById('progress-fill').style.width = `${((state.qIndex + 1) / state.questions.length) * 100}%`;
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.textContent = state.qIndex === state.questions.length - 1 ? 'SEE RESULTS →' : 'NEXT →';
+  nextBtn.classList.add('show');
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  state.qIndex++;
+  if (state.qIndex >= state.questions.length) showResults();
+  else renderQuestion();
+});
+
+/* ============================================================
+   RESULTS
+   ============================================================ */
+function showResults() {
+  showScreen('results-screen');
+  const total = state.questions.length;
+  const score = state.score;
+  const pct = (score / total) * 100;
+
+  document.getElementById('results-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('score-total').textContent = `/ ${total}`;
+
+  let msg, sub;
+  if (pct === 100)      { msg = '🔥 FLAWLESS RITUAL 🔥';    sub = 'Perfect score. The pentagram glows brighter.'; }
+  else if (pct >= 80)   { msg = '💀 STONE COLD';             sub = 'That was clean. Run it back to lock it in.'; }
+  else if (pct >= 60)   { msg = '🩸 DRAWING BLOOD';          sub = 'Strong run. The slips are exactly where to focus.'; }
+  else if (pct >= 40)   { msg = '🕯️ FINDING THE THREAD';     sub = 'Coming together. Every miss = a study tip.'; }
+  else                   { msg = '👁️ EARLY DAYS';             sub = 'No stress. The grind respects effort. Go again.'; }
+
+  document.getElementById('score-message').textContent = msg;
+  document.getElementById('score-sub').textContent = sub;
+
+  const bests = getBestScores();
+  const previousBest = bests[state.currentRound.key];
+  const newBestEl = document.getElementById('new-best');
+  if (previousBest === undefined || score > previousBest) {
+    setBestScore(state.currentRound.key, score);
+    newBestEl.style.display = 'block';
+  } else {
+    newBestEl.style.display = 'none';
+  }
+}
+
+document.getElementById('play-again-btn').addEventListener('click', () => startRound(state.currentRound));
+document.getElementById('back-home-btn').addEventListener('click', () => {
+  renderHome();
+  showScreen('home-screen');
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderHome();
+</script>
+</body>
+</html>
