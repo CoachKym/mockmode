@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Physics — Mock Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #03060f;
+    --bg-mid: #0a1228;
+    --bg-card: #0f1a3a;
+    --bg-card-hi: #16244d;
+    --cyan: #00e5ff;
+    --cyan-soft: #6ff0ff;
+    --cyan-glow: rgba(0, 229, 255, 0.35);
+    --gold: #ffd86b;
+    --crimson: #ff4d6d;
+    --green: #4dffb0;
+    --text: #e8f1ff;
+    --text-dim: #8aa3c7;
+    --border: rgba(0, 229, 255, 0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Starfield backdrop */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(2px 2px at 20% 30%, white, transparent),
+      radial-gradient(1px 1px at 60% 70%, white, transparent),
+      radial-gradient(1.5px 1.5px at 80% 20%, var(--cyan-soft), transparent),
+      radial-gradient(1px 1px at 35% 85%, white, transparent),
+      radial-gradient(2px 2px at 90% 60%, var(--cyan-soft), transparent),
+      radial-gradient(1px 1px at 10% 50%, white, transparent),
+      radial-gradient(1.5px 1.5px at 50% 10%, white, transparent),
+      radial-gradient(1px 1px at 75% 90%, var(--cyan-soft), transparent),
+      radial-gradient(ellipse at 50% 50%, var(--bg-mid) 0%, var(--bg-deep) 70%);
+    background-size: 100% 100%;
+    z-index: -1;
+    opacity: 0.7;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(0, 229, 255, 0.08), transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255, 77, 109, 0.06), transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 16px;
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--cyan-soft);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-btn:hover { background: var(--bg-card); border-color: var(--cyan); }
+
+  .subject-tag {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--cyan);
+    letter-spacing: 0.15em;
+    font-size: 0.85rem;
+    text-shadow: 0 0 12px var(--cyan-glow);
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ===== HOME SCREEN ===== */
+  .home-hero {
+    text-align: center;
+    padding: 24px 8px 32px;
+  }
+
+  .home-hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.2rem, 7vw, 3rem);
+    font-weight: 900;
+    color: var(--cyan);
+    text-shadow: 0 0 24px var(--cyan-glow), 0 0 4px white;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .home-hero .tagline {
+    color: var(--text-dim);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .rounds-grid {
+    display: grid;
+    gap: 14px;
+    padding: 8px 0 24px;
+  }
+
+  .round-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .round-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+    transition: left 0.6s;
+  }
+
+  .round-card:hover {
+    border-color: var(--cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 229, 255, 0.15);
+  }
+  .round-card:hover::before { left: 100%; }
+
+  .round-card.boss {
+    background: linear-gradient(135deg, #2a0a1a 0%, #1a0530 100%);
+    border-color: var(--crimson);
+  }
+  .round-card.boss:hover {
+    border-color: var(--gold);
+    box-shadow: 0 8px 24px rgba(255, 77, 109, 0.25);
+  }
+
+  .round-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .round-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--cyan-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .round-card.boss .round-title { color: var(--gold); }
+
+  .round-meta {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .round-desc {
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  .round-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  .stat-pill {
+    background: rgba(0, 229, 255, 0.1);
+    color: var(--cyan-soft);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .round-card.boss .stat-pill {
+    background: rgba(255, 216, 107, 0.12);
+    color: var(--gold);
+  }
+
+  .best-score {
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  /* ===== QUIZ SCREEN ===== */
+  .quiz-header {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .quiz-round-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--cyan-soft);
+    font-weight: 700;
+  }
+
+  .quiz-progress {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--bg-card);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--cyan-soft));
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px var(--cyan-glow);
+  }
+
+  .question-card {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-mid) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 1.08rem;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    background: var(--bg-mid);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 14px 16px;
+    border-radius: 10px;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.98rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--cyan);
+    background: var(--bg-card-hi);
+    transform: translateX(2px);
+  }
+
+  .option-letter {
+    background: var(--bg-deep);
+    color: var(--cyan-soft);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-family: 'Cinzel', serif;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .option:disabled { cursor: default; }
+
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(77, 255, 176, 0.12);
+    color: var(--green);
+  }
+  .option.correct .option-letter {
+    background: var(--green);
+    color: var(--bg-deep);
+    border-color: var(--green);
+  }
+
+  .option.wrong {
+    border-color: var(--crimson);
+    background: rgba(255, 77, 109, 0.12);
+    color: var(--crimson);
+  }
+  .option.wrong .option-letter {
+    background: var(--crimson);
+    color: white;
+    border-color: var(--crimson);
+  }
+
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border-left: 3px solid var(--cyan);
+    background: rgba(0, 229, 255, 0.06);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: none;
+  }
+  .feedback.show { display: block; animation: slideIn 0.3s ease; }
+  .feedback.correct { border-left-color: var(--green); background: rgba(77, 255, 176, 0.06); }
+  .feedback.wrong { border-left-color: var(--crimson); background: rgba(255, 77, 109, 0.06); }
+
+  .feedback-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.03em;
+  }
+  .feedback.correct .feedback-title { color: var(--green); }
+  .feedback.wrong .feedback-title { color: var(--crimson); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .next-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--cyan-soft) 100%);
+    color: var(--bg-deep);
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 14px var(--cyan-glow);
+    display: none;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--cyan-glow); }
+
+  /* ===== RESULTS SCREEN ===== */
+  .results-card {
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-mid) 100%);
+    border: 1px solid var(--cyan);
+    border-radius: 18px;
+    padding: 32px 24px;
+    text-align: center;
+    box-shadow: 0 0 40px var(--cyan-glow);
+  }
+
+  .results-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    color: var(--cyan);
+    margin-bottom: 8px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+  }
+
+  .results-round {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  .score-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    background: var(--bg-deep);
+    border: 4px solid var(--cyan);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px var(--cyan-glow), inset 0 0 20px rgba(0, 229, 255, 0.1);
+  }
+  .score-num {
+    font-family: 'Cinzel', serif;
+    font-size: 3rem;
+    color: var(--cyan-soft);
+    font-weight: 900;
+    line-height: 1;
+  }
+  .score-total {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .score-message {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .score-sub {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+  }
+
+  .new-best {
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 12px rgba(255, 216, 107, 0.4);
+  }
+
+  .results-actions {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  .btn {
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    letter-spacing: 0.04em;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--cyan-soft) 100%);
+    color: var(--bg-deep);
+    box-shadow: 0 4px 14px var(--cyan-glow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--cyan-soft);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg-card-hi); border-color: var(--cyan); }
+
+  /* small touches */
+  @media (max-width: 480px) {
+    .home-hero h1 { font-size: 2rem; }
+    .question-card { padding: 18px; }
+    .question-text { font-size: 1rem; }
+    .option { font-size: 0.94rem; padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <a href="index.html" class="back-btn">← Mock Mode</a>
+    <span class="subject-tag">PHYSICS</span>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="home-screen">
+    <div class="home-hero">
+      <h1>PHYSICS</h1>
+      <p class="tagline">Pick your battle. Eyes up.</p>
+    </div>
+    <div class="rounds-grid" id="rounds-grid"></div>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="screen" id="quiz-screen">
+    <div class="quiz-header">
+      <span class="quiz-round-name" id="quiz-round-name"></span>
+      <span class="quiz-progress" id="quiz-progress"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback">
+        <div class="feedback-title" id="feedback-title"></div>
+        <div id="feedback-text"></div>
+      </div>
+    </div>
+    <button class="next-btn" id="next-btn">NEXT →</button>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="screen" id="results-screen">
+    <div class="results-card">
+      <div class="results-title" id="results-title">ROUND COMPLETE</div>
+      <div class="results-round" id="results-round-name"></div>
+      <div class="score-circle">
+        <div class="score-num" id="score-num">0</div>
+        <div class="score-total" id="score-total">/ 0</div>
+      </div>
+      <div class="new-best" id="new-best" style="display:none;">⚡ NEW BEST ⚡</div>
+      <div class="score-message" id="score-message"></div>
+      <div class="score-sub" id="score-sub"></div>
+      <div class="results-actions">
+        <button class="btn btn-primary" id="play-again-btn">PLAY AGAIN</button>
+        <button class="btn btn-secondary" id="back-home-btn">CHOOSE ANOTHER ROUND</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   PHYSICS QUESTION BANK
+   Edexcel International GCSE — Year 10
+   5 themed rounds + Final Boss
+   ========================================================= */
+
+const QUESTION_BANK = {
+  /* ==========================================================
+     ROUND 1: LIGHTSPEED 🌠
+     Motion, Speed, Velocity, Acceleration, Graphs, SUVAT
+     Heavy on v-t graphs and equation selection
+     ========================================================== */
+  lightspeed: [
+    {
+      q: "A cyclist travels 150 m in 10 seconds. What is their average speed?",
+      options: ["1.5 m/s", "15 m/s", "150 m/s", "0.15 m/s"],
+      correct: 1,
+      explain: "Speed = distance ÷ time = 150 ÷ 10 = 15 m/s. Watch the decimal place — easy slip."
+    },
+    {
+      q: "What does the GRADIENT of a velocity-time graph tell you?",
+      options: ["Distance travelled", "Acceleration", "Speed", "Time taken"],
+      correct: 1,
+      explain: "Gradient of v-t graph = acceleration. Locked in. Area under it = distance. Memorise both as a pair."
+    },
+    {
+      q: "What does the AREA UNDER a velocity-time graph tell you?",
+      options: ["Acceleration", "Average speed", "Distance travelled", "Force on the object"],
+      correct: 2,
+      explain: "Area under v-t = distance. Gradient = acceleration. Two facts, one graph — never mix them up."
+    },
+    {
+      q: "On a distance-time graph, a HORIZONTAL flat line means the object is...",
+      options: ["Moving at constant speed", "Accelerating", "Stationary (not moving)", "Slowing down"],
+      correct: 2,
+      explain: "Flat line on d-t = no distance change = stopped. On a v-t graph it would mean constant speed instead."
+    },
+    {
+      q: "On a velocity-time graph, a HORIZONTAL flat line means the object is...",
+      options: ["Stationary", "Moving at constant velocity", "Accelerating", "Decelerating"],
+      correct: 1,
+      explain: "Flat on v-t = velocity isn't changing = constant speed. Different graph, different meaning. This is the trap."
+    },
+    {
+      q: "A car accelerates from 5 m/s to 25 m/s in 4 seconds. What is its acceleration?",
+      options: ["5 m/s²", "20 m/s²", "30 m/s²", "100 m/s²"],
+      correct: 0,
+      explain: "a = (v − u) ÷ t = (25 − 5) ÷ 4 = 20 ÷ 4 = 5 m/s². Subtract first, then divide."
+    },
+    {
+      q: "You're given: initial speed, final speed, and distance — but NO time. Which equation do you reach for?",
+      options: ["v = u + at", "v² = u² + 2as", "F = ma", "s = ½(u+v)t"],
+      correct: 1,
+      explain: "No time? Use v² = u² + 2as. The big tell: there's no 't' in this equation. That's literally why it exists."
+    },
+    {
+      q: "An object is dropped and falls 5 m. Using v² = u² + 2as with g = 10 m/s², what is its final speed?",
+      options: ["5 m/s", "10 m/s", "50 m/s", "100 m/s"],
+      correct: 1,
+      explain: "u = 0 (dropped), a = 10, s = 5. So v² = 0 + 2×10×5 = 100. v = √100 = 10 m/s. Don't forget the square root!"
+    },
+    {
+      q: "Look at a v-t graph: line starts at origin and rises in a straight line. What's happening?",
+      options: ["Constant velocity", "Constant acceleration from rest", "Decelerating", "Object is stopped"],
+      correct: 1,
+      explain: "Straight rising line on v-t = constant (steady) acceleration. Starts at origin = started from rest."
+    },
+    {
+      q: "On a v-t graph, the line CURVES upward, getting steeper. This means...",
+      options: ["Constant acceleration", "Acceleration is increasing", "Acceleration is decreasing", "Constant velocity"],
+      correct: 1,
+      explain: "Steeper gradient = bigger acceleration. Curve getting steeper = acceleration growing. Curve flattening = acceleration shrinking."
+    },
+    {
+      q: "Which of these is a VECTOR quantity?",
+      options: ["Speed", "Distance", "Velocity", "Time"],
+      correct: 2,
+      explain: "Vectors have size AND direction. Velocity = speed + direction. Speed alone is a scalar. Same for distance vs displacement."
+    },
+    {
+      q: "A car travels at constant 20 m/s for 30 seconds. What distance does it cover?",
+      options: ["50 m", "600 m", "1.5 m", "10 m"],
+      correct: 1,
+      explain: "Distance = speed × time = 20 × 30 = 600 m. Constant speed means no equation gymnastics needed."
+    },
+    {
+      q: "How do you calculate acceleration from a velocity-time graph?",
+      options: ["Read the y-intercept", "Find the area under the line", "Calculate the gradient (slope)", "Multiply velocity by time"],
+      correct: 2,
+      explain: "Acceleration = gradient of v-t graph = (change in velocity) ÷ (change in time). Pick two clear points, do the maths."
+    },
+    {
+      q: "How do you calculate distance travelled from a velocity-time graph?",
+      options: ["Find the gradient", "Find the area under the line", "Read the highest velocity", "Multiply gradient by time"],
+      correct: 1,
+      explain: "Distance = area under v-t. Triangle? ½ × base × height. Rectangle? base × height. Weird shape? Split it up."
+    },
+    {
+      q: "A ball falls from rest. After 2 seconds (g = 10 m/s²), what's its speed?",
+      options: ["5 m/s", "10 m/s", "20 m/s", "40 m/s"],
+      correct: 2,
+      explain: "v = u + at = 0 + 10×2 = 20 m/s. From rest means u = 0. Free fall on Earth ≈ 10 m/s² (or 9.8 if being fussy)."
+    },
+    {
+      q: "You need to find DISTANCE and you're given initial velocity, time, and acceleration. Which equation works?",
+      options: ["v = u + at", "F = ma", "s = ut + ½at²", "v² = u² + 2as"],
+      correct: 2,
+      explain: "Got u, a, t and need s? Use s = ut + ½at². The other distance equation (v²=u²+2as) needs final velocity, which you don't have here."
+    },
+    {
+      q: "Which is the correct equation for acceleration?",
+      options: ["a = (v − u) × t", "a = (v − u) ÷ t", "a = u + vt", "a = v² − u²"],
+      correct: 1,
+      explain: "Acceleration = change in velocity ÷ time taken = (v − u) ÷ t. Final minus initial, divided by time. Locked in."
+    },
+    {
+      q: "On a d-t graph, a STEEPER line means the object is...",
+      options: ["Slower", "Faster", "Stopped", "Going backwards"],
+      correct: 1,
+      explain: "Steeper slope on d-t = covering more distance per second = faster. Gentle slope = slow. Flat = stopped."
+    }
+  ],
+
+  /* ==========================================================
+     ROUND 2: GRAVITY WELL 🪐
+     Forces, Newton's Laws, Weight, Friction, Stopping Distance
+     ========================================================== */
+  gravity_well: [
+    {
+      q: "What is the equation for force?",
+      options: ["F = m + a", "F = m × a", "F = m ÷ a", "F = a ÷ m"],
+      correct: 1,
+      explain: "Force = mass × acceleration. F = ma. The classic. Newton's second law in 5 characters."
+    },
+    {
+      q: "What is the equation for weight?",
+      options: ["W = m × g", "W = m ÷ g", "W = m + g", "W = mgh"],
+      correct: 0,
+      explain: "Weight = mass × gravitational field strength. W = mg. On Earth, g ≈ 10 N/kg. So a 5 kg bag weighs 50 N."
+    },
+    {
+      q: "A 60 kg person stands on Earth where g = 10 N/kg. What is their weight?",
+      options: ["6 N", "60 N", "600 N", "6000 N"],
+      correct: 2,
+      explain: "W = mg = 60 × 10 = 600 N. Mass is in kilograms, weight is in newtons. They are NOT the same thing."
+    },
+    {
+      q: "A 1500 kg car accelerates at 2 m/s². What driving force is needed?",
+      options: ["750 N", "1502 N", "3000 N", "7500 N"],
+      correct: 2,
+      explain: "F = ma = 1500 × 2 = 3000 N. Force in newtons, mass in kg, acceleration in m/s². Units matter."
+    },
+    {
+      q: "A force of 200 N acts on an 8 kg object. What's the acceleration?",
+      options: ["25 m/s²", "1600 m/s²", "0.04 m/s²", "208 m/s²"],
+      correct: 0,
+      explain: "Rearrange F = ma → a = F ÷ m = 200 ÷ 8 = 25 m/s². If F is given and you need a, divide."
+    },
+    {
+      q: "What force acts opposite to a car's motion as it drives forward?",
+      options: ["Weight", "Friction (and air resistance)", "Tension", "Gravity"],
+      correct: 1,
+      explain: "Friction with the road + air resistance = the resistive force opposing motion. At constant speed, driving force = friction force."
+    },
+    {
+      q: "A skydiver reaches TERMINAL VELOCITY. This means...",
+      options: ["They're accelerating very fast", "Air resistance equals their weight, so they fall at constant speed", "Gravity has stopped acting on them", "They are slowing down"],
+      correct: 1,
+      explain: "Terminal velocity = forces balanced. Weight (down) = air resistance (up). Net force = 0, so no acceleration, just constant speed."
+    },
+    {
+      q: "Which is true about thinking distance?",
+      options: ["It depends on the brakes", "It increases with speed and reaction time", "It only depends on the road surface", "It's the same at all speeds"],
+      correct: 1,
+      explain: "Thinking distance = how far you travel during your reaction time. Faster speed OR slower reactions = bigger thinking distance."
+    },
+    {
+      q: "A wet road affects BRAKING distance because...",
+      options: ["It changes your reaction time", "It reduces friction between tyres and road", "It makes the car heavier", "It changes the car's mass"],
+      correct: 1,
+      explain: "Wet road = less friction = brakes can't decelerate the car as quickly = longer braking distance. Reaction time isn't affected."
+    },
+    {
+      q: "A wet road affects THINKING distance because...",
+      options: ["It reduces friction", "It doesn't — thinking distance depends on the driver, not the road", "The car is heavier when wet", "Brakes work less well"],
+      correct: 1,
+      explain: "Trick question energy. Thinking distance is about the DRIVER'S reactions — the road condition doesn't change that. Only braking distance is affected."
+    },
+    {
+      q: "Stopping distance equals...",
+      options: ["Just braking distance", "Just thinking distance", "Thinking distance + braking distance", "Reaction time × speed"],
+      correct: 2,
+      explain: "Total stopping distance = thinking distance + braking distance. Both pieces matter. Common exam favourite."
+    },
+    {
+      q: "What is the difference between mass and weight?",
+      options: ["They're the same thing", "Mass is in newtons, weight is in kg", "Mass is amount of matter (kg), weight is force of gravity on it (N)", "Mass changes with location, weight doesn't"],
+      correct: 2,
+      explain: "Mass = amount of stuff (kg, never changes). Weight = pull of gravity on that stuff (N, changes with planet). Your mass on the Moon is the same; your weight isn't."
+    },
+    {
+      q: "A child slides down a zip-line. Which forces act on them?",
+      options: ["Just tension", "Weight, tension, and air resistance/friction", "Only gravity", "Just friction"],
+      correct: 1,
+      explain: "Multiple forces team up: weight pulls down, tension pulls up the wire, friction/air resistance opposes motion. All vectors, all matter."
+    },
+    {
+      q: "If the resultant force on an object is ZERO, the object will...",
+      options: ["Always be stationary", "Always accelerate", "Stay at rest OR move at constant velocity", "Slow down and stop"],
+      correct: 2,
+      explain: "Newton's 1st law: no net force = no acceleration. So either still resting OR cruising at the same speed. No change."
+    },
+    {
+      q: "Tiredness, alcohol, or distractions affect which part of stopping distance?",
+      options: ["Braking distance", "Thinking distance", "Both equally", "Neither"],
+      correct: 1,
+      explain: "These slow your reactions = longer thinking distance. Brakes work the same regardless of who's driving (assuming car is fine)."
+    },
+    {
+      q: "Worn brakes or worn tyres affect which part of stopping distance?",
+      options: ["Braking distance", "Thinking distance", "Both equally", "Neither — only weather matters"],
+      correct: 0,
+      explain: "Bad brakes/tyres = less stopping force = longer braking distance. Driver's reactions aren't affected by car condition."
+    },
+    {
+      q: "On the Moon, g ≈ 1.6 N/kg. A 50 kg astronaut would weigh...",
+      options: ["500 N (same as Earth)", "80 N", "50 N", "5 N"],
+      correct: 1,
+      explain: "W = mg = 50 × 1.6 = 80 N. Mass stays 50 kg everywhere, but weight drops because gravity is weaker on the Moon."
+    }
+  ],
+
+  /* ==========================================================
+     ROUND 3: POWER CORE ⚡
+     Energy, Work, Power, KE, GPE, Efficiency
+     ========================================================== */
+  power_core: [
+    {
+      q: "What is the equation for work done?",
+      options: ["W = F + d", "W = F × d", "W = F ÷ d", "W = ½Fd²"],
+      correct: 1,
+      explain: "Work = force × distance moved. W = Fd. Measured in joules (J). Pushing harder OR further = more work done."
+    },
+    {
+      q: "A force of 50 N pushes a box 4 m. How much work is done?",
+      options: ["12.5 J", "54 J", "200 J", "100 J"],
+      correct: 2,
+      explain: "W = F × d = 50 × 4 = 200 J. Joules = newtons × metres. Easy maths, just pick the right equation."
+    },
+    {
+      q: "What is the equation for kinetic energy?",
+      options: ["KE = mgh", "KE = ½mv²", "KE = mv", "KE = Fd"],
+      correct: 1,
+      explain: "KE = ½ × mass × velocity². The ½ matters. The squared matters even more — double the speed = 4× the KE."
+    },
+    {
+      q: "What is the equation for gravitational potential energy?",
+      options: ["GPE = ½mv²", "GPE = m × g × h", "GPE = F × d", "GPE = m ÷ g"],
+      correct: 1,
+      explain: "GPE = mass × gravitational field strength × height. Higher up = more GPE. Heavier = more GPE."
+    },
+    {
+      q: "A 2 kg ball moves at 5 m/s. What is its kinetic energy?",
+      options: ["5 J", "10 J", "25 J", "50 J"],
+      correct: 2,
+      explain: "KE = ½mv² = ½ × 2 × 5² = ½ × 2 × 25 = 25 J. Square the velocity FIRST, then multiply. Order of operations is your friend."
+    },
+    {
+      q: "A 10 kg bag is lifted 3 m up. (g = 10 N/kg). What's the GPE gained?",
+      options: ["30 J", "100 J", "300 J", "13 J"],
+      correct: 2,
+      explain: "GPE = mgh = 10 × 10 × 3 = 300 J. Three numbers, multiply them all. Don't add — common mistake."
+    },
+    {
+      q: "What is power?",
+      options: ["Force × distance", "Work done per second (rate of energy transfer)", "Energy stored in a height", "Mass × acceleration"],
+      correct: 1,
+      explain: "Power = how fast energy is transferred. P = W ÷ t. Measured in watts (W). 1 watt = 1 joule per second."
+    },
+    {
+      q: "What is the equation for power?",
+      options: ["P = W × t", "P = W ÷ t", "P = F × d", "P = ½mv²"],
+      correct: 1,
+      explain: "Power = work done ÷ time taken. P = W/t. Same energy in less time = more power. That's why a sprinter is more powerful than a jogger."
+    },
+    {
+      q: "A motor does 600 J of work in 30 seconds. What is its power?",
+      options: ["20 W", "30 W", "570 W", "18000 W"],
+      correct: 0,
+      explain: "P = W ÷ t = 600 ÷ 30 = 20 W. Watts = joules per second. Just divide."
+    },
+    {
+      q: "What is efficiency?",
+      options: ["Total energy input ÷ wasted energy", "(Useful energy output ÷ total energy input) × 100%", "Power × time", "Force × distance"],
+      correct: 1,
+      explain: "Efficiency = (useful out ÷ total in) × 100%. Always a percentage. Always less than 100% (some energy is always wasted as heat/sound)."
+    },
+    {
+      q: "A bulb takes in 100 J of electrical energy and gives out 20 J of light. What's its efficiency?",
+      options: ["20%", "80%", "120%", "5%"],
+      correct: 0,
+      explain: "Efficiency = (20 ÷ 100) × 100% = 20%. The other 80 J? Wasted as heat. That's why old bulbs got hot."
+    },
+    {
+      q: "Energy can be...",
+      options: ["Created if you have enough force", "Destroyed by friction", "Transferred or transformed, but not created or destroyed", "Stored only in batteries"],
+      correct: 2,
+      explain: "Conservation of energy: total energy stays constant. It just changes form (e.g. GPE → KE → heat). This is THE big rule of physics."
+    },
+    {
+      q: "A ball is dropped from a height. As it falls, GPE turns into...",
+      options: ["More GPE", "Kinetic energy", "Sound only", "Nothing — energy disappears"],
+      correct: 1,
+      explain: "Falling: GPE decreases, KE increases. Energy is transferred between stores. At the lowest point, max KE. Just before it hits, all GPE is gone."
+    }
+  ],
+
+  /* ==========================================================
+     ROUND 4: CURRENT FLOW 🔌
+     Circuits, V=IR, Series vs Parallel, Components, Q=It
+     ========================================================== */
+  current_flow: [
+    {
+      q: "What is current defined as?",
+      options: ["Energy per unit charge", "Rate of flow of charge", "Resistance to flow", "Voltage divided by time"],
+      correct: 1,
+      explain: "Current = how much charge flows per second. Measured in amperes (A). 1 amp = 1 coulomb of charge per second."
+    },
+    {
+      q: "What is voltage defined as?",
+      options: ["Rate of flow of charge", "Energy transferred per unit charge", "Total resistance in a circuit", "Current × time"],
+      correct: 1,
+      explain: "Voltage (potential difference) = energy given to each coulomb of charge. Measured in volts (V). 1 V = 1 J per coulomb."
+    },
+    {
+      q: "What is the equation for voltage, current and resistance?",
+      options: ["V = I + R", "V = I × R", "V = I ÷ R", "V = I² × R"],
+      correct: 1,
+      explain: "V = IR. Voltage = current × resistance. The single most-used equation in circuits. Memorise it cold."
+    },
+    {
+      q: "A 12 V battery drives 0.5 A through a resistor. What's the resistance?",
+      options: ["6 Ω", "12.5 Ω", "24 Ω", "0.04 Ω"],
+      correct: 2,
+      explain: "Rearrange V = IR → R = V ÷ I = 12 ÷ 0.5 = 24 Ω. Need R? Divide voltage by current."
+    },
+    {
+      q: "What is the equation for charge?",
+      options: ["Q = I + t", "Q = I × t", "Q = I ÷ t", "Q = V × R"],
+      correct: 1,
+      explain: "Charge = current × time. Q = It. Measured in coulombs (C). More current for longer = more charge has flowed."
+    },
+    {
+      q: "A current of 2 A flows for 30 seconds. What charge has flowed?",
+      options: ["15 C", "32 C", "60 C", "0.067 C"],
+      correct: 2,
+      explain: "Q = It = 2 × 30 = 60 C. Coulombs = amps × seconds. Pure multiplication."
+    },
+    {
+      q: "In a SERIES circuit, the current is...",
+      options: ["The same everywhere", "Different at every point", "Highest near the battery", "Zero through resistors"],
+      correct: 0,
+      explain: "Series = one path = current is the SAME everywhere. The charge has nowhere else to go. Same current through every component."
+    },
+    {
+      q: "In a PARALLEL circuit, the current...",
+      options: ["Is the same in every branch", "Splits between the branches and adds back together", "Stops at the first junction", "Only flows through the biggest resistor"],
+      correct: 1,
+      explain: "Parallel = multiple paths. Current splits at junctions, recombines after. Total current in = total current out. Branch currents may differ."
+    },
+    {
+      q: "In a SERIES circuit, the voltage from the battery is...",
+      options: ["The same across every component", "Shared between the components", "Always zero", "Doubled across each resistor"],
+      correct: 1,
+      explain: "Series voltages SHARE: total voltage = sum of voltages across each component. Bigger resistance gets more voltage."
+    },
+    {
+      q: "In a PARALLEL circuit, the voltage across each branch is...",
+      options: ["Shared between branches", "The same as the battery (across each parallel branch)", "Always zero", "Decreases along each branch"],
+      correct: 1,
+      explain: "Parallel branches all share the SAME voltage = battery voltage. That's why parallel-wired Christmas lights don't all die when one bulb blows."
+    },
+    {
+      q: "A circuit has two resistors in parallel. Currents are 0.4 A and 0.2 A in the branches. What's the total current from the battery?",
+      options: ["0.2 A", "0.4 A", "0.6 A", "0.08 A"],
+      correct: 2,
+      explain: "In parallel, branch currents ADD up to total. 0.4 + 0.2 = 0.6 A. The battery supplies the total."
+    },
+    {
+      q: "What does a THERMISTOR do?",
+      options: ["Its resistance changes with temperature", "It only lets current flow one way", "It stores charge", "Its resistance changes with light"],
+      correct: 0,
+      explain: "Thermistor = temperature-sensitive resistor. Hotter = LOWER resistance. Used in temperature sensors, fire alarms, thermostats."
+    },
+    {
+      q: "What does an LDR (Light Dependent Resistor) do?",
+      options: ["Its resistance changes with temperature", "Only lets current flow one way", "Its resistance changes with light intensity", "Stores energy like a battery"],
+      correct: 2,
+      explain: "LDR: brighter light = lower resistance. Used in automatic streetlights and camera light meters."
+    },
+    {
+      q: "What does an LED (Light Emitting Diode) do?",
+      options: ["Allows current in both directions and emits light", "Only allows current to flow ONE way and emits light when it does", "Stores light energy", "Has fixed resistance"],
+      correct: 1,
+      explain: "LED is a diode = current only flows one way (forward). When current flows the right way, it lights up. Wrong way = nothing happens."
+    },
+    {
+      q: "When the temperature DROPS, a thermistor's resistance...",
+      options: ["Decreases", "Stays the same", "Increases", "Becomes zero"],
+      correct: 2,
+      explain: "Cold = HIGHER resistance for a thermistor. Hot = lower. Inverse relationship. This is the opposite of how it might first seem."
+    },
+    {
+      q: "Two resistors in series have total resistance = R1 + R2. If R1 = 4 Ω and R2 = 6 Ω, total resistance is...",
+      options: ["2 Ω", "10 Ω", "24 Ω", "0.4 Ω"],
+      correct: 1,
+      explain: "Series: just add them. 4 + 6 = 10 Ω. (Parallel is more complicated, but series is just addition.)"
+    },
+    {
+      q: "An ammeter is connected in ___ and a voltmeter is connected in ___.",
+      options: ["Parallel ; series", "Series ; parallel", "Series ; series", "Parallel ; parallel"],
+      correct: 1,
+      explain: "Ammeter goes in SERIES (in line with the current it's measuring). Voltmeter goes in PARALLEL (across the component it's measuring). Easy to mix up."
+    },
+    {
+      q: "A current of 0.5 A flows through a 12 Ω resistor. What's the voltage across it?",
+      options: ["0.04 V", "6 V", "12.5 V", "24 V"],
+      correct: 1,
+      explain: "V = IR = 0.5 × 12 = 6 V. Need voltage? Multiply current by resistance. Three-letter equation, three numbers."
+    }
+  ],
+
+  /* ==========================================================
+     ROUND 5: MAINFRAME 🏠
+     Mains Electricity, AC/DC, Safety, Fuses, Circuit Breakers, Power
+     ========================================================== */
+  mainframe: [
+    {
+      q: "UK mains electricity is supplied at...",
+      options: ["12 V d.c.", "230 V a.c.", "230 V d.c.", "1000 V a.c."],
+      correct: 1,
+      explain: "UK mains = 230 V a.c. (alternating current). Batteries give d.c. (direct current). Different beasts."
+    },
+    {
+      q: "What does a.c. stand for?",
+      options: ["Atomic current", "Alternating current", "Active charge", "Average circuit"],
+      correct: 1,
+      explain: "a.c. = alternating current — it changes direction many times per second. Mains a.c. in the UK alternates 50 times per second (50 Hz)."
+    },
+    {
+      q: "What does d.c. stand for?",
+      options: ["Direct current", "Double charge", "Discharged circuit", "Differential current"],
+      correct: 0,
+      explain: "d.c. = direct current — flows one way only. Batteries and cells give d.c. Phones, laptops use d.c. inside (the charger converts mains a.c. → d.c.)."
+    },
+    {
+      q: "What is the equation for electrical power?",
+      options: ["P = I + V", "P = I × V", "P = I ÷ V", "P = V ÷ I"],
+      correct: 1,
+      explain: "Power = current × voltage. P = IV. Watts = amps × volts. Memorise this with V = IR — they're the two big circuit equations."
+    },
+    {
+      q: "A device runs at 230 V and draws 5 A. What's its power?",
+      options: ["46 W", "225 W", "235 W", "1150 W"],
+      correct: 3,
+      explain: "P = IV = 5 × 230 = 1150 W. Just over 1 kW — that's about kettle territory."
+    },
+    {
+      q: "What is the equation for energy transferred by a current?",
+      options: ["E = IV", "E = I × V × t", "E = V ÷ t", "E = I × t²"],
+      correct: 1,
+      explain: "E = IVt. Energy = current × voltage × time. Same as power × time. Joules out the other end."
+    },
+    {
+      q: "What does a FUSE do?",
+      options: ["Increases the current", "Melts and breaks the circuit if current is too high", "Stores extra charge", "Converts a.c. to d.c."],
+      correct: 1,
+      explain: "Fuse = thin wire that MELTS if current gets too big. Breaks the circuit, protects the appliance and you. Single use though — must be replaced."
+    },
+    {
+      q: "What does a CIRCUIT BREAKER do?",
+      options: ["Permanently breaks the wire", "Trips (switches off) when current is too high, and can be reset", "Only works once like a fuse", "Increases the voltage"],
+      correct: 1,
+      explain: "Circuit breaker = does the same job as a fuse but it can be RESET. Just flick it back on once you've fixed the problem. Reusable."
+    },
+    {
+      q: "A disadvantage of fuses compared to circuit breakers is...",
+      options: ["Fuses are too expensive", "Fuses must be replaced after they blow (slower to fix)", "Fuses don't work", "Fuses use more electricity"],
+      correct: 1,
+      explain: "Fuses are single-use — once blown, replace. Circuit breakers reset instantly. Also, circuit breakers usually trip faster than fuses melt."
+    },
+    {
+      q: "What does the EARTH wire do?",
+      options: ["Makes the appliance heavier", "Carries the main current", "Provides a safe path to ground if a fault occurs, preventing electric shock", "Switches the appliance on"],
+      correct: 2,
+      explain: "Earth wire = safety route. If a fault makes the metal case live, current rushes through earth wire (low resistance) → blows the fuse → power cut off → no electrocution."
+    },
+    {
+      q: "The LIVE wire in UK plugs is...",
+      options: ["Green and yellow", "Brown", "Blue", "Black"],
+      correct: 1,
+      explain: "UK colours: LIVE = brown, NEUTRAL = blue, EARTH = green-and-yellow stripes. Memorise these — common exam question."
+    },
+    {
+      q: "The NEUTRAL wire in UK plugs is...",
+      options: ["Brown", "Blue", "Green and yellow", "Red"],
+      correct: 1,
+      explain: "Neutral = blue. Live = brown (think 'brown is alive'). Earth = green and yellow stripes."
+    },
+    {
+      q: "An appliance with a metal case needs an earth wire because...",
+      options: ["It looks better", "If the live wire touches the case, the case becomes dangerous unless earthed", "It makes it work faster", "It saves electricity"],
+      correct: 1,
+      explain: "Metal case + loose live wire = case becomes live = touch it = electrocuted. Earth wire gives current a safer path away, blowing the fuse."
+    },
+    {
+      q: "Why is having TWO switches in a lawnmower circuit safer?",
+      options: ["It uses more power", "Both must be pressed at once — prevents accidental starting", "It makes the motor faster", "It saves the battery"],
+      correct: 1,
+      explain: "Two-switch design = you need both hands to start it. Stops accidental start-ups (e.g. picking it up). Hands busy = nowhere near the spinning blade. Safety first."
+    },
+    {
+      q: "Energy transferred by a 60 W bulb left on for 2 hours (7200 s) is...",
+      options: ["120 J", "30 J", "432,000 J", "62 J"],
+      correct: 2,
+      explain: "E = P × t = 60 × 7200 = 432,000 J. Watts × seconds = joules. Always convert hours/minutes to seconds before plugging in."
+    },
+    {
+      q: "Why does a circuit breaker need to react quickly?",
+      options: ["To save electricity", "To stop the wires from overheating and starting a fire", "To make the appliance work better", "To use less power"],
+      correct: 1,
+      explain: "Big current = wires heat up FAST = fire risk. Circuit breaker (or fuse) cuts power before damage is done. Speed matters."
+    }
+  ]
+};
+
+/* ==========================================================
+   ROUND METADATA
+   ========================================================== */
+const ROUNDS = [
+  {
+    id: 'lightspeed',
+    title: 'Lightspeed',
+    icon: '🌠',
+    desc: 'Motion, speed, acceleration & those v-t graphs that haunt the dreams.',
+    questionsPerRound: 10,
+    pool: 'lightspeed'
+  },
+  {
+    id: 'gravity_well',
+    title: 'Gravity Well',
+    icon: '🪐',
+    desc: 'Forces, weight, friction, stopping distance. Newton would be proud.',
+    questionsPerRound: 10,
+    pool: 'gravity_well'
+  },
+  {
+    id: 'power_core',
+    title: 'Power Core',
+    icon: '⚡',
+    desc: 'Energy, work, power, KE, GPE. Joules and watts everywhere.',
+    questionsPerRound: 10,
+    pool: 'power_core'
+  },
+  {
+    id: 'current_flow',
+    title: 'Current Flow',
+    icon: '🔌',
+    desc: 'Circuits, V=IR, series vs parallel, components. Wire it up.',
+    questionsPerRound: 10,
+    pool: 'current_flow'
+  },
+  {
+    id: 'mainframe',
+    title: 'Mainframe',
+    icon: '🏠',
+    desc: '230 V, fuses, earth wire, power. House-level electricity.',
+    questionsPerRound: 10,
+    pool: 'mainframe'
+  },
+  {
+    id: 'singularity',
+    title: 'The Singularity',
+    icon: '⭐',
+    desc: '15 random questions from ALL rounds. Boss fight. No mercy.',
+    questionsPerRound: 15,
+    pool: 'all',
+    boss: true
+  }
+];
+
+/* ==========================================================
+   STATE & STORAGE
+   ========================================================== */
+const STORAGE_KEY = 'physics-mock-mode-v1';
+
+function loadScores() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveScores(scores) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+}
+
+let state = {
+  currentRound: null,
+  questions: [],
+  qIndex: 0,
+  score: 0,
+  answered: false
+};
+
+/* ==========================================================
+   HOME SCREEN
+   ========================================================== */
+function renderHome() {
+  const grid = document.getElementById('rounds-grid');
+  const scores = loadScores();
+  grid.innerHTML = '';
+
+  ROUNDS.forEach(round => {
+    const best = scores[round.id];
+    const card = document.createElement('div');
+    card.className = 'round-card' + (round.boss ? ' boss' : '');
+    card.innerHTML = `
+      <div class="round-header">
+        <div class="round-title">${round.icon} ${round.title}</div>
+        <div class="round-meta">${round.boss ? 'BOSS' : 'ROUND ' + (ROUNDS.indexOf(round) + 1)}</div>
+      </div>
+      <div class="round-desc">${round.desc}</div>
+      <div class="round-stats">
+        <span class="stat-pill">${round.questionsPerRound} Qs</span>
+        ${best !== undefined ? `<span class="best-score">★ Best: ${best}/${round.questionsPerRound}</span>` : '<span style="color:var(--text-dim);font-size:0.85rem">Not attempted</span>'}
+      </div>
+    `;
+    card.addEventListener('click', () => startRound(round));
+    grid.appendChild(card);
+  });
+}
+
+/* ==========================================================
+   ROUND LOGIC
+   ========================================================== */
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getQuestionsForRound(round) {
+  if (round.pool === 'all') {
+    const all = [];
+    Object.values(QUESTION_BANK).forEach(arr => all.push(...arr));
+    return shuffleArray(all).slice(0, round.questionsPerRound);
+  }
+  const pool = QUESTION_BANK[round.pool] || [];
+  return shuffleArray(pool).slice(0, round.questionsPerRound);
+}
+
+function startRound(round) {
+  state.currentRound = round;
+  state.questions = getQuestionsForRound(round);
+  state.qIndex = 0;
+  state.score = 0;
+  state.answered = false;
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = state.questions[state.qIndex];
+  document.getElementById('quiz-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('quiz-progress').textContent = `${state.qIndex + 1} / ${state.questions.length}`;
+  document.getElementById('progress-fill').style.width = `${((state.qIndex) / state.questions.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.q;
+
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, btn));
+    optionsEl.appendChild(btn);
+  });
+
+  document.getElementById('feedback').classList.remove('show', 'correct', 'wrong');
+  document.getElementById('next-btn').classList.remove('show');
+  state.answered = false;
+}
+
+function handleAnswer(choice, btnEl) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.questions[state.qIndex];
+  const correct = choice === q.correct;
+  const allButtons = document.querySelectorAll('.option');
+
+  allButtons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    else if (i === choice) b.classList.add('wrong');
+  });
+
+  const feedback = document.getElementById('feedback');
+  const feedbackTitle = document.getElementById('feedback-title');
+  const feedbackText = document.getElementById('feedback-text');
+
+  if (correct) {
+    state.score++;
+    feedbackTitle.textContent = '✓ NAILED IT';
+    feedback.classList.add('correct');
+  } else {
+    feedbackTitle.textContent = '✗ NOT QUITE';
+    feedback.classList.add('wrong');
+  }
+  feedbackText.textContent = q.explain;
+  feedback.classList.add('show');
+
+  document.getElementById('progress-fill').style.width = `${((state.qIndex + 1) / state.questions.length) * 100}%`;
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.textContent = state.qIndex === state.questions.length - 1 ? 'SEE RESULTS →' : 'NEXT →';
+  nextBtn.classList.add('show');
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  state.qIndex++;
+  if (state.qIndex >= state.questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+/* ==========================================================
+   RESULTS SCREEN
+   ========================================================== */
+function showResults() {
+  showScreen('results-screen');
+  const total = state.questions.length;
+  const score = state.score;
+  const pct = (score / total) * 100;
+
+  document.getElementById('results-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('score-num').textContent = score;
+  document.getElementById('score-total').textContent = `/ ${total}`;
+
+  // Score messages — encouraging, never anxiety-inducing
+  let msg, sub;
+  if (pct === 100) { msg = '⚡ FLAWLESS VICTORY ⚡'; sub = 'You went full god-mode. Untouchable.'; }
+  else if (pct >= 80) { msg = '🔥 ABSOLUTELY COOKING'; sub = 'That was clean. Run it back to lock it in.'; }
+  else if (pct >= 60) { msg = '💪 SOLID RUN'; sub = 'Strong base. A few wobbles — those are gold for revision.'; }
+  else if (pct >= 40) { msg = '🎯 GETTING THERE'; sub = 'Not bad at all. The misses are exactly what to study next.'; }
+  else { msg = '🚀 EARLY DAYS'; sub = 'No stress. Every wrong answer just turned into a study tip. Go again.'; }
+
+  document.getElementById('score-message').textContent = msg;
+  document.getElementById('score-sub').textContent = sub;
+
+  // Best score check
+  const scores = loadScores();
+  const oldBest = scores[state.currentRound.id] || 0;
+  const newBestEl = document.getElementById('new-best');
+  if (score > oldBest) {
+    scores[state.currentRound.id] = score;
+    saveScores(scores);
+    newBestEl.style.display = 'block';
+  } else {
+    newBestEl.style.display = 'none';
+  }
+}
+
+document.getElementById('play-again-btn').addEventListener('click', () => {
+  startRound(state.currentRound);
+});
+document.getElementById('back-home-btn').addEventListener('click', () => {
+  showScreen('home-screen');
+  renderHome();
+});
+
+/* ==========================================================
+   SCREEN ROUTER
+   ========================================================== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// Initial render
+renderHome();
+</script>
+</body>
+</html>
