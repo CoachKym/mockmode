@@ -609,25 +609,55 @@ function startRound(roundId) {
 }
 
 function renderQuestion() {
-  window.scrollTo(0, 0);
-  const q = state.questions[state.qIdx];
-  const total = state.questions.length;
-  const pct = (state.qIdx / total) * 100;
-  const opts = q.o.map((opt, i) => `<button class="opt" data-i="${i}">${opt}</button>`).join('');
-  app.innerHTML = `
-    <button class="back-btn" id="home-btn">\u2190 Back to rounds</button>
-    <div class="q-header">
-      <span>${state.round.name} \u00b7 Q<b>${state.qIdx + 1}</b> of ${total}</span>
-      <span>Score <b>${state.score}</b></span>
-    </div>
-    <div class="progress"><div class="progress-fill" style="width: ${pct}%"></div></div>
-    <p class="question">${q.q}</p>
-    <div id="opts">${opts}</div>
-    <div id="feedback"></div>
-  `;
-  document.getElementById('home-btn').addEventListener('click', renderHome);
-  app.querySelectorAll('.opt').forEach(btn => {
-    btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.i)));
+  state.answered = false;
+
+  const q = state.questions[state.qIndex];
+  document.getElementById('quiz-round-name').textContent = `${state.currentRound.icon} ${state.currentRound.title}`;
+  document.getElementById('quiz-progress').textContent = `${state.qIndex + 1} / ${state.questions.length}`;
+  document.getElementById('progress-fill').style.width = `${(state.qIndex / state.questions.length) * 100}%`;
+  document.getElementById('question-text').textContent = q.q;
+
+  // Shuffle option order so correct answer moves position every time
+  const indices = [0, 1, 2, 3];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  state.optionMap = indices;
+
+  const optionsEl = document.getElementById('options');
+  optionsEl.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  indices.forEach((origIdx, displayIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="option-letter">${letters[displayIdx]}</span><span>${q.options[origIdx]}</span>`;
+    btn.addEventListener('click', () => handleAnswer(origIdx));
+    optionsEl.appendChild(btn);
+  });
+
+  const feedback = document.getElementById('feedback');
+  feedback.className = 'feedback';
+  feedback.classList.remove('show', 'wrong');
+
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.remove('show');
+}
+
+function handleAnswer(choice) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q = state.questions[state.qIndex];
+  const correct = choice === q.correct;
+  const allButtons = document.querySelectorAll('.option');
+
+  allButtons.forEach((b, i) => {
+    b.disabled = true;
+    const origIdx = state.optionMap[i];
+    if (origIdx === q.correct) b.classList.add('correct');
+    else if (origIdx === choice) b.classList.add('wrong');
   });
 }
 
